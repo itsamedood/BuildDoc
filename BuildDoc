@@ -1,0 +1,10 @@
+# Variables.
+NAME="dood"
+HOBBY='code'
+AGE=17
+OS=?{uname -s | tr A-Z a-z} # ?{} is a shell command, where the value is the result.
+
+[test] # Default task.
+&echo "I'm $NAME, I'm $AGE years old, and I love to $HOBBY on $OS!"
+
+[empty]
