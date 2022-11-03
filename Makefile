@@ -21,10 +21,10 @@ OUTPATH  := bin/$(SYS)
 ZIP		 := release/$(VERSION)/builddoc-$(SYS).zip
 
 .PHONY: all
-run:
-	@python3 -B ./$(MAIN)
-
 compile:
 	@echo 🛠 Compiling... 🛠
 	@echo -----------------
-	@echo Not ready to compile yet!
+	cxfreeze --target-dir ./bin/$(SYS) --target-name $(BINARY) ./$(MAIN)
+
+run:
+	@python3 -B ./$(MAIN)

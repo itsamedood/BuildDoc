@@ -1,6 +1,5 @@
 from cli import Cli
-import sys
+from sys import argv
 
 
-CLI = Cli(sys.argv)
-CLI.process_args()
+if __name__ == "__main__": Cli(argv).process()

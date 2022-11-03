@@ -1,10 +1,6 @@
-# Variables.
-NAME="dood"
-HOBBY='code'
-AGE=17
-OS=?{uname -s | tr A-Z a-z} # ?{} is a shell command, where the value is the result.
+# THI$ is a comment! :D 👌
+[main]
+echo "The parser ignores me... for now!"
 
-[test] # Default task.
-&echo "I'm $NAME, I'm $AGE years old, and I love to $HOBBY on $OS!"
-
-[empty]
+[test] # This task can only be run by running `build test`.
+&echo 'Silenced!'

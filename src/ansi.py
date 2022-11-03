@@ -30,12 +30,11 @@ class Special:
     SUCCESS = "\033[1;32m"
     WARNING = "\033[1;33m"
     ERROR   = "\033[1;31m"
+    NOTE    = "\033[1;47m"
     RESET   = "\033[0;0;0m"
 
 class Ansi:
-    """
-    Class for using ANSI color codes.
-    """
+    """ Class for using ANSI color codes. """
     style   = TextStyle()
     text    = TextColor()
     bg      = BGColor()
@@ -44,9 +43,6 @@ class Ansi:
 
     @staticmethod
     def new(style: int, text_color: int, bg_color: int) -> str:
-        """
-        Creates a new ANSI color code. If the numbers are not valid, the effect is not produced.
-        """
-        if text_color and bg_color == 0:
-            return f"\033[{style}m"
+        """ Creates a new ANSI color code. If the numbers are not valid, the effect is not produced. """
+        if text_color and bg_color == 0: return f"\033[{style}m"
         return f"\033[{style};{bg_color}m" if text_color == 0 else f"\033[{style};{text_color}m"
