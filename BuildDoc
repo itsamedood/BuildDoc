@@ -1,6 +1,7 @@
+TEST="All 'good'!"
+
 # THI$ is a comment! :D 👌
 [main]
-echo "The parser ignores me... for now!"
 
-[test] # This task can only be run by running `build test`.
-&echo 'Silenced!'
+# `.` here means that this task is not runnable from the command line. It can only be called in another task.
+[.test]

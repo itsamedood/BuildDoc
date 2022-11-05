@@ -3,7 +3,8 @@ from interpreter.parser import Parser
 from interpreter.runner import Runner
 from out import BuildDocError
 from ansi import Ansi
-from os.path import exists, curdir
+from os import getcwd, scandir
+from os.path import exists
 from sys import exit
 
 
@@ -43,15 +44,20 @@ class Cli:
         flags["no-echo"] = no_echo
         return flags
 
+    def builddoc_path(self) -> str | None:
+        CWD = getcwd()
+
+        for file in scandir(CWD):
+            if file.name.lower() == "builddoc": return f"{CWD}/{file.name}"
+        return None
+
     def process(self) -> None:
+        PATH = self.builddoc_path()
         task = self.args[1] if len(self.args) >= 2 and not self.args[1][0] == '-' else None
         flags = [f for f in self.args if f[:2] == '--'] if len(self.args) >= 2 else None
+        read_flags = self.read_flags(flags)
+        always_zero, no_echo = read_flags["always-zero"], read_flags["no-echo"]
 
-        if exists(f"{curdir}/builddoc"):
-            with open(f"{curdir}/builddoc", 'r') as builddoc:
-                read_flags = self.read_flags(flags)
-                always_zero, no_echo = read_flags["always-zero"], read_flags["no-echo"]
-
-
-                Runner.run_task(no_echo, task, Parser(always_zero).map(Lexer.tokenize(builddoc.readlines())[1:]))
-        else: raise BuildDocError("no builddoc found", 1)
+        if PATH is not None:
+            with open(PATH, 'r') as builddoc: Runner.run_task(no_echo, task, Parser(always_zero).map(Lexer.tokenize(builddoc.readlines())[1:]))
+        else: raise BuildDocError("no builddoc found", 0 if always_zero else 1)

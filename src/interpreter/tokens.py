@@ -2,30 +2,22 @@ from enum import Enum
 
 
 class LetterToken:
-    """ Used with `Token.LETTER`. """
+    def __init__(self, letter: str) -> None: self.value, self.name = letter, "LETTER"
 
-    value = ''
-
-    def __init__(self, letter: str) -> None: self.value = letter
 
 class NumberToken:
-    """ Used with `Token.NUMBER`. """
-
-    value = ''
-
-    def __init__(self, number: str) -> None: self.value = number
+    def __init__(self, number: str) -> None: self.value, self.name = number, "NUMBER"
 
 
 class UnknownToken:
-    """ Represents an unknown token, such as a unicode character, or unused symbol like caret (^). """
+    def __init__(self, token: str) -> None: self.value, self.name = token, "UNKNOWN"
 
-    value = ''
 
-    def __init__(self, token: str) -> None: self.value = token
+class StringToken:
+    def __init__(self, string: str) -> None: self.value, self.name = string, "STRING"
+
 
 class Token(Enum):
-    """ Represents a token from the Lexer. """
-
     # LISTS #
     LETTER      = [c for c in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
     NUMBER      = [n for n in "0123456789"]
@@ -64,4 +56,5 @@ class Token(Enum):
     BACKSLASH   = '\\'
     TAB         = '\t'
     NEWLINE     = '\n'
+    SOF         = ...
     EOF         = None

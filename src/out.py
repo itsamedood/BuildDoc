@@ -4,8 +4,6 @@ from sys import exit
 
 class BuildDocError(BaseException):
     """ Base class for all BuildDoc errors. """
-
-
     def __init__(self, message: str, code: int) -> None:
         print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: {message}.")
         exit(code)
@@ -13,8 +11,6 @@ class BuildDocError(BaseException):
 
 class BuildDocTracedError(BuildDocError):
     """ Error with a trace to the line & character. """
-
-
     def __init__(self, message: str, code: int, line: int, char: int) -> None:
         print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{line}{Ansi.special.RESET},{Ansi.style.LIGHT}{char}{Ansi.special.RESET}]: {message}.")
         exit(code)
