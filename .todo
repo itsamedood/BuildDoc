@@ -11,9 +11,9 @@
 
 [PARSER]
 🟢 Get task names read and raise an exception if any invalid character is read.
-🔴 Read variable names and raise an exception for invalid characters.
-🔴 Read variable values, and ensure that they are in between quotes, single or double.
-🔴 Read global variables.
+🟢 Read variable names and raise an exception for invalid characters.
+🟢 Read variable values, and ensure that they are in between quotes, single or double.
+🟡 Read global variables.
 🔴 Replace variables in variable values. The value must belong to a variable declared before the current variable.
 🔴 Map variable names to values.
 🔴 Read commands.

@@ -18,7 +18,8 @@ class Cli:
         ("--help", "Displays help."),
         ("--version", "Displays version."),
         ("--always-zero", "Prevents BuildDoc from exiting with any status code other than zero."),
-        ("--no-echo", "Prevents BuildDoc from echoing the command being run regardless of silence operator.")]
+        ("--no-echo", "Prevents BuildDoc from echoing the command being run regardless of silence operator."),
+        ("--verbose", "Enable verbose output.")]
     args: list[str]
 
     def __init__(self, args: list[str]) -> None: self.args = args
@@ -36,28 +37,30 @@ class Cli:
                 match f[2:]:
                     case "help": self.help()
                     case "version": print(f"BuildDoc {Ansi.special.SUCCESS}v{VERSION}{Ansi.special.RESET}"); exit(0)
-                    case "always-zero": always_zero = True
-                    case "no-echo": no_echo = True
+                    case "always-zero": flags["always_zero"] = True
+                    case "no-echo": flags["no_echo"] = True
+                    case "verbose": flags["verbose"] = True
                     case f: raise BuildDocError(f"unknown flag: '{f}'", 1)
 
-        flags["always-zero"] = always_zero
-        flags["no-echo"] = no_echo
         return flags
 
     def builddoc_path(self) -> str | None:
         CWD = getcwd()
-
-        for file in scandir(CWD):
-            if file.name.lower() == "builddoc": return f"{CWD}/{file.name}"
-        return None
+        PATH = [f"{CWD}/{file.name}" for file in scandir(CWD) if file.name.lower() == "builddoc"]
+        return PATH[0] if len(PATH) > 0 else None
 
     def process(self) -> None:
         PATH = self.builddoc_path()
         task = self.args[1] if len(self.args) >= 2 and not self.args[1][0] == '-' else None
-        flags = [f for f in self.args if f[:2] == '--'] if len(self.args) >= 2 else None
-        read_flags = self.read_flags(flags)
-        always_zero, no_echo = read_flags["always-zero"], read_flags["no-echo"]
+        cli_flags = [f for f in self.args if f[:2] == '--'] if len(self.args) >= 2 else None
+        flags = self.read_flags(cli_flags)
+
+        always_zero: bool
+        try: always_zero = flags["always_zero"]
+        except KeyError: always_zero = False
 
         if PATH is not None:
-            with open(PATH, 'r') as builddoc: Runner.run_task(no_echo, task, Parser(always_zero).map(Lexer.tokenize(builddoc.readlines())[1:]))
+            with open(PATH, 'r') as builddoc:
+                try: Runner.run_task(builddoc.readlines(), task, flags)
+                except IndexError: ...
         else: raise BuildDocError("no builddoc found", 0 if always_zero else 1)

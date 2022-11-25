@@ -19,7 +19,7 @@ class StringToken:
 
 class Token(Enum):
     # LISTS #
-    LETTER      = [c for c in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+    LETTER      = [c for c in "abcdefghijklmnopqrstuvwxyz"]
     NUMBER      = [n for n in "0123456789"]
 
     # PAIRS #
@@ -56,5 +56,6 @@ class Token(Enum):
     BACKSLASH   = '\\'
     TAB         = '\t'
     NEWLINE     = '\n'
+    BROKEN_STR  = ''
     SOF         = ...
     EOF         = None

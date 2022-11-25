@@ -1,7 +1,8 @@
 TEST="All 'good'!"
+.NAME="dood" # '.' here makes this variable immutable.
 
-# THI$ is a comment! :D 👌
 [main]
+%goto(test) # Calls the private task 'test'. Never include the '.' in private tasks or constant variables.
 
-# `.` here means that this task is not runnable from the command line. It can only be called in another task.
-[.test]
+[.test] # '.' here makes this task private. It can't be run via the cli, but rather only the `goto` macro.
+echo $NAME

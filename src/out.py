@@ -28,7 +28,7 @@ class BuildDocTracedWarning:
 
 class BuildDocNote:
     """ Represents a note from the BuildDoc interpreter. """
-    def __init__(self, message) -> None: print(f"builddoc: {Ansi.special.NOTE}note{Ansi.special.RESET}: {message}")
+    def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.special.NOTE}note{Ansi.special.RESET}: {message}")
 
 
 class BuildDocDebugMessage:

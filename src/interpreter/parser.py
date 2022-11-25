@@ -1,19 +1,21 @@
 from interpreter.tokens import *
-from out import BuildDocTracedError
+from interpreter.variable import *
+from out import BuildDocTracedError, BuildDocTracedWarning
 
 
 class Parser:
     """ Parses the tokens from the lexer. """
 
-    status_code: int
+    def __init__(self, always_zero: bool, verbose: bool) -> None:
+        self.status_code, self.verbose = 1 if not always_zero else 0, verbose
 
-    def __init__(self, always_zero: bool) -> None: self.status_code = 1 if not always_zero else 0
-
-    def raise_unexpected_token(self, token: Token | LetterToken | NumberToken | UnknownToken | StringToken, line: int, char: int):
-        value = "whitespace" if token.value == ' ' else "'\\n'" if token.value == '\n' else "tab" if token.value == '\t' else f"'{token.value}'"
+    def raise_unexpected_token(self, token: Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable, line: int, char: int):
+        value = "whitespace" if token.value == ' ' else "newline" if token.value == '\n' else "tab" if token.value == '\t' else f"'{token.value}'"
         raise BuildDocTracedError(f"unexpected {value}", self.status_code, line, char)
 
-    def map(self, tokens: list[Token | LetterToken | NumberToken | UnknownToken | StringToken]):
+    def replace_vars(self, str_or_line: str, line: int, char: int): ...
+
+    def map(self, tokens: list[Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable]):
         """ Maps variables with their values, and tasks with their commands. """
 
         # Parser vars.
@@ -27,8 +29,8 @@ class Parser:
         reading_comment, reading_var_value = False, False
 
         # Dicts.
-        vars_map: dict[str, str] = {}
-        task_map: dict[str, list[str]] = {}
+        vars_map: dict[str, tuple[str, bool]] = {}
+        task_map: dict[str, tuple[list[str], bool]] = {}
 
         # Ensuring line 1 doesn't start with a whitespace or tab.
         if tokens[0] is Token.WHITESPACE or tokens[0] is Token.TAB: self.raise_unexpected_token(tokens[0], 1, 1)
@@ -51,7 +53,10 @@ class Parser:
             else:
                 reading_comment = False
 
-                if reading_var_value: print(token.value)
+                if not bracket_open and len(current_section) < 1 and not reading_var_value and token is not Token.EQUAL and token is not Token.L_BRACK:
+                    if type(token) is LetterToken: var_name += token.value
+                    elif token is Token.PERIOD and len(var_name) < 1: var_name += token.value
+
                 else:
                     match token:
                         # PAIRS #
@@ -70,7 +75,9 @@ class Parser:
 
                             if len(section) < 1: raise BuildDocTracedError("empty section declaration", self.status_code, line, char)
                             current_section, section = section, ''
-                            task_map[current_section] = []
+
+                            if current_section[0] == Token.PERIOD.value: task_map[current_section[1:]] = ([], True)
+                            else: task_map[current_section] = ([], False)
 
                         case Token.L_ANG_BRACK as tok: ...
                         case Token.R_ANG_BRACK as tok: ...
@@ -81,13 +88,16 @@ class Parser:
                         case Token.QUESTION as tok: ...
                         case Token.AMPERSAND as tok: ...
                         case Token.PERCENT as tok: ...
-                        case Token.EQUAL as tok: ...
+                        case Token.EQUAL as tok:
+                            if len(var_name) < 1 and var_name[0] == Token.PERIOD.value: self.raise_unexpected_token(tok, line, char)
+
+                            if tokens[t+1] is Token.BROKEN_STR: raise BuildDocTracedError("unclosed string", self.status_code, line, char)
+                            elif type(tokens[t+1]) is not StringToken: raise BuildDocTracedError("value must be in quotes", self.status_code, line, char)
+
+                            reading_var_value = True
 
                         # SYMBOLS #
                         case Token.HASH: reading_comment = True
-
-                        case Token.D_QUOTE as tok: ...
-                        case Token.S_QUOTE as tok: ...
                         case Token.BACKTICK as tok: ...
 
                         case Token.PERIOD as tok: ...
@@ -106,24 +116,51 @@ class Parser:
                             if tokens[t-1] is Token.NEWLINE: self.raise_unexpected_token(tok, line, char)
 
                         case Token.NEWLINE as tok:
+                            if reading_var_value:
+                                if type(tokens[t-1]) is not StringToken: raise BuildDocTracedError("expected value", self.status_code, line, char)
+
+                            var_name, var_value = '', ''
+                            reading_var_value = False
                             line += 1
                             char = 0
+
+                        case Token.BROKEN_STR: raise BuildDocTracedError("unclosed string", self.status_code, line, char)
 
                         case Token.SOF as tok: ...
 
                         case Token.EOF as tok:
                             if bracket_open: raise BuildDocTracedError("unclosed '['", self.status_code, line, char)
+                            if astr_open: raise BuildDocTracedError("unclosed string", self.status_code, line, char)
 
                         # OTHER #
-                        case t if type(t) is LetterToken:
-                            if bracket_open: section += t.value
+                        case tok if type(tok) is Variable:
+                            tok.set_vars_map(vars_map)
+                            value, constant = tok.value
+
+                            print("value: %s" %value)
+                            print("constant: %s" %"yes" if constant else "no")
+
+                        case tok if type(tok) is LetterToken:
+                            if bracket_open: section += tok.value
+                            elif not bracket_open and len(current_section) < 1 and not reading_var_value: var_name += tok.value
                             else: ...
 
                         case t if type(t) is NumberToken: ...  # Doubt this'll do much.
                         case t if type(t) is UnknownToken: ...
-                        case t if type(t) is StringToken: ...
+
+                        case t if type(t) is StringToken:
+                            if reading_var_value: var_value = t.value
+                            reading_var_value = False
+
+                            if len(current_section) < 1:
+                                if len(var_value) < 1: BuildDocTracedWarning(f"'{var_name}' has empty value", line, char)
+                                if var_name[0] == Token.PERIOD.value: vars_map[var_name[1:]] = (var_value, True)
+                                else: vars_map[var_name] = (var_value, False)
+
+                                var_name, var_value = '', ''
+
                         case _: ...
 
-        # print(vars_map)
-        print(task_map)
+        if self.verbose: print("VARS MAP:", vars_map)
+        if self.verbose: print("TASK MAP:", task_map)
         return (vars_map, task_map)
