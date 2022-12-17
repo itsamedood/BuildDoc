@@ -1,7 +1,7 @@
 from interpreter.tokens import *
 from interpreter.flags import Flags
 from interpreter.variable import Variable
-from out import BuildDocTracedError, BuildDocTracedWarning, BuildDocNote
+from out import BuildDocTracedError, BuildDocTracedWarning
 
 
 class Parser:
@@ -13,8 +13,6 @@ class Parser:
     def raise_unexpected_token(self, token: Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable, line: int, char: int):
         value = "whitespace" if token.value == ' ' else "newline" if token.value == '\n' else "tab" if token.value == '\t' else "'%s'" %token.value
         raise BuildDocTracedError("unexpected %s" %value, self.status_code, line, char)
-
-    def replace_vars(self, str_or_line: str, line: int, char: int): ...
 
     def map(self, tokens: list[Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable]):
         """ Maps variables with their values, and tasks with their commands. """
@@ -60,10 +58,9 @@ class Parser:
                     elif token is Token.PERIOD and len(var_name) < 1: var_name += token.value
 
                 else:
-                    if len(current_section) > 0 and token is not Token.NEWLINE and token is not Token.L_BRACE:
-                        if type(token) is LetterToken: command += token.value
-                        else:
-                            if type(token.value) is str: command += token.value
+                    if len(current_section) > 0 and token is not Token.NEWLINE and token is not Token.L_BRACK and token is not Token.R_BRACK and token is not Token.HASH:
+                        if type(token.value) is str: command += token.value
+                        elif type(token) is Variable: command += token.value(vars_map)[0]
 
                     match token:
                         # PAIRS #
@@ -129,6 +126,11 @@ class Parser:
                             if reading_var_value:
                                 if type(tokens[t-1]) is not StringToken: raise BuildDocTracedError("expected value", self.status_code, line, char)
 
+                            cmd = command.strip()  # Close your eyes, the command is stripping!
+                            if len(cmd) > 0:
+                                if self.verbose: print("COMMAND = %s" %cmd)
+                                command = ''
+
                             var_name, var_value = '', ''
                             reading_var_value = False
                             line += 1
@@ -147,7 +149,7 @@ class Parser:
                             value, constant = tok.value(vars_map)
 
                             if self.verbose: print("value: %s" %value)
-                            if self.verbose: print("constant: %s" %"yes" if constant else "no")
+                            if self.verbose: print("constant: %s" %("yes" if constant else "no"))
 
                         case tok if type(tok) is LetterToken:
                             if bracket_open: section += tok.value

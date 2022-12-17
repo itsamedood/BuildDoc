@@ -13,12 +13,10 @@ class Lexer:
         string, var_name = '', ''
         sstr_open, dstr_open, reading_var, comment = False, False, False, False
 
-        # verbose: bool, status_code: int
         verbose, status_code = flags.verbose, 0 if flags.always_zero else 1
 
         tokens.append(Token.SOF)
-
-        if verbose: BuildDocNote("iterating over each line")
+        if verbose: BuildDocNote("iterating over each line...")
 
         # Iterate over each line.
         for line in range(len(code)):
@@ -32,6 +30,21 @@ class Lexer:
                     if cc == Token.NEWLINE.value: comment = False
                     else: continue
 
+                elif reading_var:
+                    if cc.lower() in Token.LETTER.value: var_name += cc
+                    else:
+                        tokens.append(Variable(var_name, line, c, status_code))
+                        reading_var = False
+                        var_name = ''
+
+                        # Ensures that whatever character ended the read of the variable name is added to the list.
+                        if cc.lower() in Token.LETTER.value: tokens.append(LetterToken(cc))
+                        elif cc in Token.NUMBER.value: tokens.append(NumberToken(cc))
+                        else:
+                            try: tokens.append(Token(cc))
+                            except ValueError: tokens.append(UnknownToken(cc))
+
+                    if not cc == Token.NEWLINE.value: continue
                 elif cc == Token.HASH.value: comment = True
 
                 # Reading strings here to make it easier for the parser.
@@ -44,16 +57,7 @@ class Lexer:
                     if not dstr_open: tokens.append(StringToken(string)); string = ''
 
                 elif sstr_open or dstr_open: string += cc
-
-                elif reading_var:
-                    if cc.lower() in Token.LETTER.value: var_name += cc
-                    else:
-                        tokens.append(Variable(var_name, line, c, status_code))
-                        reading_var = False
-                        var_name = ''
-
-                elif cc == Token.DOLLAR.value:
-                    reading_var = True
+                elif cc == Token.DOLLAR.value: reading_var = True
 
                 # `Token.LETTER` & `Token.NUMBER` are both of type `list[str]`, so they can't be used as cases.
                 elif cc.lower() in Token.LETTER.value: tokens.append(LetterToken(cc))

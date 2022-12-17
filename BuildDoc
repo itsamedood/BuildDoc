@@ -1,8 +1,9 @@
-TEST="All 'good'!"
+TEST="wow this is working!!!"
 .NAME="dood" # '.' here makes this variable immutable.
 
 [main]
 %goto(test) # Calls the private task 'test'. Never include the '.' in private tasks or constant variables.
 
 [.test] # '.' here makes this task private. It can't be run via the cli, but rather only the `goto` macro.
-echo $NAME
+echo $TEST
+echo hi
