@@ -1,16 +1,20 @@
 from interpreter.tokens import *
-from interpreter.variable import *
-from out import BuildDocTracedError, BuildDocNote
+from interpreter.flags import Flags
+from interpreter.variable import Variable
+from out import BuildDocNote
 
 
 class Lexer:
     """ Tokenizes the code. """
 
     @staticmethod
-    def tokenize(code: list[str], verbose: bool, status_code: int):
+    def tokenize(code: list[str], flags: Flags):
         tokens: list[Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable] = []
         string, var_name = '', ''
         sstr_open, dstr_open, reading_var, comment = False, False, False, False
+
+        # verbose: bool, status_code: int
+        verbose, status_code = flags.verbose, 0 if flags.always_zero else 1
 
         tokens.append(Token.SOF)
 
@@ -18,7 +22,7 @@ class Lexer:
 
         # Iterate over each line.
         for line in range(len(code)):
-            if verbose: BuildDocNote(f"iterating through each char on line {line+1}.")
+            if verbose: BuildDocNote("iterating through each char on line %s." %(line+1))
 
             # Iterate over each character in the current line.
             for c in range(len(code[line])):
@@ -58,10 +62,10 @@ class Lexer:
                     try: tokens.append(Token(cc))  # `Token(cc)` will find whatever Token has the value matching `cc`.
                     except ValueError: tokens.append(UnknownToken(cc))  # Tells the parser to ignore this token in certain circumstances.
 
-                if verbose: BuildDocNote(f"Appended token: {tokens[-1].name}")
+                if verbose: BuildDocNote("Appended token: %s" %tokens[-1].name)
 
         if len(string) > 0: tokens.append(Token.BROKEN_STR)
         tokens.append(Token.EOF)
 
-        if verbose: BuildDocNote(f"FINAL TOKENS:\n{[t.name for t in tokens]}")
+        if verbose: BuildDocNote("FINAL TOKENS:\n%s" %[t.name for t in tokens])
         return tokens

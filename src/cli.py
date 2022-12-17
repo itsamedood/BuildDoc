@@ -1,10 +1,8 @@
-from interpreter.lexer import Lexer
-from interpreter.parser import Parser
+from interpreter.flags import Flags
 from interpreter.runner import Runner
 from out import BuildDocError
 from ansi import Ansi
 from os import getcwd, scandir
-from os.path import exists
 from sys import exit
 
 
@@ -30,8 +28,6 @@ class Cli:
         """ Checks the given flags and gives them to the parser & runner. """
         flags: dict[str, bool] = {}
 
-        always_zero, no_echo = False, False
-
         if _flags is not None:
             for f in _flags:
                 match f[2:]:
@@ -40,7 +36,7 @@ class Cli:
                     case "always-zero": flags["always_zero"] = True
                     case "no-echo": flags["no_echo"] = True
                     case "verbose": flags["verbose"] = True
-                    case f: raise BuildDocError(f"unknown flag: '{f}'", 1)
+                    case _: raise BuildDocError("unknown flag: '%s'" %f, 1)
 
         return flags
 
@@ -53,14 +49,10 @@ class Cli:
         PATH = self.builddoc_path()
         task = self.args[1] if len(self.args) >= 2 and not self.args[1][0] == '-' else None
         cli_flags = [f for f in self.args if f[:2] == '--'] if len(self.args) >= 2 else None
-        flags = self.read_flags(cli_flags)
-
-        always_zero: bool
-        try: always_zero = flags["always_zero"]
-        except KeyError: always_zero = False
+        flags = Flags(cli_flags)
 
         if PATH is not None:
             with open(PATH, 'r') as builddoc:
                 try: Runner.run_task(builddoc.readlines(), task, flags)
                 except IndexError: ...
-        else: raise BuildDocError("no builddoc found", 0 if always_zero else 1)
+        else: raise BuildDocError("no builddoc found", 0 if flags.always_zero else 1)

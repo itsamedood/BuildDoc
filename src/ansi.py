@@ -44,5 +44,5 @@ class Ansi:
     @staticmethod
     def new(style: int, text_color: int, bg_color: int) -> str:
         """ Creates a new ANSI color code. If the numbers are not valid, the effect is not produced. """
-        if text_color and bg_color == 0: return f"\033[{style}m"
+        if text_color and bg_color == 0: return "\033[%sm" %style
         return f"\033[{style};{bg_color}m" if text_color == 0 else f"\033[{style};{text_color}m"

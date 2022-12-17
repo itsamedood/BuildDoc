@@ -1,4 +1,4 @@
-<div align="center">
+<center>
 	<img src="./assets/builddoc-bg.png" width="700" height="400"></img>
 	<p align="center">
 		<a href="https://github.com/itsamedood/BuildDoc/blob/main/LICENSE">
@@ -12,4 +12,4 @@
 		</a>
 	</p>
 	<h2><b>Work-in-progress...</b></h2>
-</div>
+</center>

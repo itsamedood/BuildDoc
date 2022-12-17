@@ -1,7 +1,7 @@
 {
 	"configurations": [
 		{
-			"name": "Run",
+			"name": "Debug",
 			"type": "python",
 			"request": "launch",
 			"program": "src/main.py",

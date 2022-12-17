@@ -1,17 +1,18 @@
 from interpreter.tokens import *
-from interpreter.variable import *
-from out import BuildDocTracedError, BuildDocTracedWarning
+from interpreter.flags import Flags
+from interpreter.variable import Variable
+from out import BuildDocTracedError, BuildDocTracedWarning, BuildDocNote
 
 
 class Parser:
     """ Parses the tokens from the lexer. """
 
-    def __init__(self, always_zero: bool, verbose: bool) -> None:
-        self.status_code, self.verbose = 1 if not always_zero else 0, verbose
+    def __init__(self, flags: Flags) -> None:
+        self.status_code, self.verbose = 1 if not flags.always_zero else 0, flags.verbose
 
     def raise_unexpected_token(self, token: Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable, line: int, char: int):
-        value = "whitespace" if token.value == ' ' else "newline" if token.value == '\n' else "tab" if token.value == '\t' else f"'{token.value}'"
-        raise BuildDocTracedError(f"unexpected {value}", self.status_code, line, char)
+        value = "whitespace" if token.value == ' ' else "newline" if token.value == '\n' else "tab" if token.value == '\t' else "'%s'" %token.value
+        raise BuildDocTracedError("unexpected %s" %value, self.status_code, line, char)
 
     def replace_vars(self, str_or_line: str, line: int, char: int): ...
 
@@ -22,7 +23,8 @@ class Parser:
         line, char = 1, 0
         var_name, var_value = '', ''
         section, current_section = '', ''
-        command, var = '', ''
+        var = ''
+        command: str = ''
         parenth_open, bracket_open, brace_open = False, False, False
         dstr_open, sstr_open, astr_open = False, False, False
         backslash = False
@@ -58,6 +60,11 @@ class Parser:
                     elif token is Token.PERIOD and len(var_name) < 1: var_name += token.value
 
                 else:
+                    if len(current_section) > 0 and token is not Token.NEWLINE and token is not Token.L_BRACE:
+                        if type(token) is LetterToken: command += token.value
+                        else:
+                            if type(token.value) is str: command += token.value
+
                     match token:
                         # PAIRS #
                         case Token.L_PAREN as tok: ...
@@ -76,7 +83,10 @@ class Parser:
                             if len(section) < 1: raise BuildDocTracedError("empty section declaration", self.status_code, line, char)
                             current_section, section = section, ''
 
-                            if current_section[0] == Token.PERIOD.value: task_map[current_section[1:]] = ([], True)
+                            if current_section[0] == Token.PERIOD.value:
+                                current_section = current_section[1:]
+                                task_map[current_section] = ([], True)
+
                             else: task_map[current_section] = ([], False)
 
                         case Token.L_ANG_BRACK as tok: ...
@@ -134,11 +144,10 @@ class Parser:
 
                         # OTHER #
                         case tok if type(tok) is Variable:
-                            tok.set_vars_map(vars_map)
-                            value, constant = tok.value
+                            value, constant = tok.value(vars_map)
 
-                            print("value: %s" %value)
-                            print("constant: %s" %"yes" if constant else "no")
+                            if self.verbose: print("value: %s" %value)
+                            if self.verbose: print("constant: %s" %"yes" if constant else "no")
 
                         case tok if type(tok) is LetterToken:
                             if bracket_open: section += tok.value
@@ -153,7 +162,7 @@ class Parser:
                             reading_var_value = False
 
                             if len(current_section) < 1:
-                                if len(var_value) < 1: BuildDocTracedWarning(f"'{var_name}' has empty value", line, char)
+                                if len(var_value) < 1: BuildDocTracedWarning("'%s' has empty value" %var_name, line, char)
                                 if var_name[0] == Token.PERIOD.value: vars_map[var_name[1:]] = (var_value, True)
                                 else: vars_map[var_name] = (var_value, False)
 

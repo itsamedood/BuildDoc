@@ -36,4 +36,4 @@ class BuildDocDebugMessage:
     def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET}: {message}")
 
 
-def quit(code = 1) -> None: raise BuildDocError(f"exited with code: {code}", code) if code > 0 else exit(0)
+def quit(code = 1) -> None: raise BuildDocError("exited with code: %s" %code, code) if code > 0 else exit(0)
