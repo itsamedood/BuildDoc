@@ -1,5 +1,6 @@
 === KEY ===
 🟢 DONE
+🔵 SOMEWHAT DONE
 🟡 WORKING ON
 🔴 NOT STARTED
 
@@ -16,11 +17,11 @@
 🟡 Read global variables.
 🔴 Replace variables in variable values. The value must belong to a variable declared before the current variable.
 🔴 Map variable names to values.
-🔴 Read commands.
-🔴 Replace variables in commands.
-🔴 Map tasks to commands.
+🟢 Read commands.
+🟢 Replace variables in commands.
+🟢 Map tasks to commands.
 
 
 [RUNNER]
-🔴 Execute every command in given task.
-🔴 Raise exception when a command fails.
+🔵 Execute every command in given task.
+🟢 Raise exception when a command fails.

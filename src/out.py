@@ -1,5 +1,6 @@
 from ansi import Ansi
 from sys import exit
+from typing import Any
 
 
 class BuildDocError(BaseException):
@@ -28,12 +29,15 @@ class BuildDocTracedWarning:
 
 class BuildDocNote:
     """ Represents a note from the BuildDoc interpreter. """
-    def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.special.NOTE}note{Ansi.special.RESET}: {message}")
+    def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.special.NOTE}note{Ansi.special.RESET}:", message)
+
+
+class BuildDocSuccess:
+    def __init__(self, message: str) -> None:
+        print(f"builddoc: {Ansi.special.SUCCESS}success{Ansi.special.RESET}: {message}")
+        exit(0)
 
 
 class BuildDocDebugMessage:
     """ A message from the interpreter when debugging. """
     def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET}: {message}")
-
-
-def quit(code = 1) -> None: raise BuildDocError("exited with code: %s" %code, code) if code > 0 else exit(0)

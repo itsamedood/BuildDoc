@@ -31,13 +31,13 @@ class Lexer:
                     else: continue
 
                 elif reading_var:
-                    if cc.lower() in Token.LETTER.value: var_name += cc
+                    if cc.lower() in Token.LETTER.value or cc == Token.UNDERSCORE.value:var_name += cc
                     else:
                         tokens.append(Variable(var_name, line, c, status_code))
                         reading_var = False
                         var_name = ''
 
-                        # Ensures that whatever character ended the read of the variable name is added to the list.
+                        # Ensures that whatever character ended reading the variable name is added to the list.
                         if cc.lower() in Token.LETTER.value: tokens.append(LetterToken(cc))
                         elif cc in Token.NUMBER.value: tokens.append(NumberToken(cc))
                         else:

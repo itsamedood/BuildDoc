@@ -1,9 +1,8 @@
-TEST="wow this is working!!!"
-.NAME="dood" # '.' here makes this variable immutable.
+TEST_VAR="wow this is working!!!"
 
 [main]
-%goto(test) # Calls the private task 'test'. Never include the '.' in private tasks or constant variables.
+echo "val of var TEST: $TEST_VAR" # IT WORKS!!!
+# %goto(priv)
 
-[.test] # '.' here makes this task private. It can't be run via the cli, but rather only the `goto` macro.
-echo $TEST
-echo hi
+[.priv] # '.' makes this task private, meaning it can't be run from the command line, only via another task.
+echo "echoed from private task!"
