@@ -1,8 +1,16 @@
+from enum import Enum
 from interpreter.tokens import *
+from interpreter.variable import *
 from interpreter.flags import Flags
 from interpreter.macro import Macro
-from interpreter.variable import Variable
-from out import BuildDocError, BuildDocNote, BuildDocTracedError, BuildDocTracedWarning
+from out import BuildDocDebugMessage, BuildDocError, BuildDocTracedError, BuildDocTracedWarning
+
+
+class ConditionalType(Enum):
+    IF = "if"
+    ELSEIF = "elif"
+    ELSE = "else"
+    ENDIF = "endif"
 
 
 class Parser:
@@ -11,51 +19,117 @@ class Parser:
     def __init__(self, flags: Flags) -> None:
         self.status_code, self.verbose = 1 if not flags.always_zero else 0, flags.verbose
 
-    def raise_unexpected_token(self, token: Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable | Macro, line: int, char: int):
+    def raise_unexpected_token(self, token: Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable | EnvVariable | Macro, line: int, char: int):
         value = "whitespace" if token.value == ' ' else "newline" if token.value == '\n' else "tab" if token.value == '\t' else "'%s'" %token.value
         raise BuildDocTracedError("unexpected %s" %value, self.status_code, line, char)
 
-    # Currently just replaces regular variables in the string.
     @staticmethod
     def parse_string(string:str, line: int, vars_map: dict[str, tuple[str, bool]], flags: Flags) -> str:
         parsed_string = string
 
-        def throw(char: str, c: int):
-            value = "whitespace" if char == ' ' else "newline" if char == '\n' else "tab" if char == '\t' else "'%s'" %char
-            raise BuildDocTracedError("unexpected %s" %value, 0 if flags.always_zero else 1, line, c+1)
-
-        reading_var = False
-        var = ''
-        reg_vars: list[Variable] = []
+        potentially_reading_shell_var = False
+        reading_var, reading_env_var, reading_shell_var = False, False, False
+        var, env_var, shell_var = '', '', ''
+        vars_in_str: list[Variable | EnvVariable | ShellVariable] = []
 
         for c in range(len(string)):
             char = string[c]
 
             if reading_var:
                 if char.lower() in Token.LETTER.value or char == Token.UNDERSCORE.value: var += char
-                elif char == Token.NEWLINE.value: throw(char, c)
                 else:
-                    reg_vars.append(Variable(var, line, c, 0 if flags.always_zero else 1))
+                    vars_in_str.append(Variable(var, line, c, 0 if flags.always_zero else 1))
                     var, reading_var = '', False
+
+            elif reading_env_var:
+                if char.lower() in Token.LETTER.value or char in Token.NUMBER.value or char == Token.UNDERSCORE.value: env_var += char
+                else:
+                    vars_in_str.append(EnvVariable(env_var, line, c, 0 if flags.always_zero else 1))
+                    env_var, reading_env_var = '', False
+
+            elif potentially_reading_shell_var and not reading_shell_var:
+                if char == Token.L_BRACE.value: reading_shell_var = True
+                else: potentially_reading_shell_var = False
+
+            elif reading_shell_var:
+                if not char == Token.R_BRACE.value: shell_var += char
+                else:
+                    vars_in_str.append(ShellVariable(shell_var, line, c, 0 if flags.always_zero else 1))
+                    shell_var, reading_shell_var, potentially_reading_shell_var = '', False, False
 
             match char:
                 case Token.DOLLAR.value: reading_var = True
+                case Token.AT.value: reading_env_var = True
+                case Token.QUESTION.value: potentially_reading_shell_var = True
 
-                case Token.WHITESPACE.value: ...
-                case l: ...
+            if c == len(string)-1:
+                if len(var) > 0: vars_in_str.append(Variable(var, line, c, 0 if flags.always_zero else 1))
+                if len(shell_var) > 0: vars_in_str.append(ShellVariable(shell_var, line, c, 0 if flags.always_zero else 1))
 
-            if c == len(string)-1: reg_vars.append(Variable(var, line, c, 0 if flags.always_zero else 1))
-        if flags.verbose: BuildDocNote(f"REG VARS FOUND: {[rv.var_name for rv in reg_vars]}")
+        for v in range(len(vars_in_str)):
+            varobj = vars_in_str[v]
 
-        for v in range(len(reg_vars)):
-            var = reg_vars[v]
-            value, constant = var.value(vars_map)
-            parsed_string = parsed_string.replace("$%s" %var.var_name, value)
+            if type(varobj) is Variable:
+                if len(varobj.var_name) > 0:
+                    value, constant = varobj.value(vars_map)
+                    val = Parser.parse_string(value, line, vars_map, flags)  # 🔄!
+                    parsed_string = parsed_string.replace("$%s" %varobj.var_name, val)
+
+            elif type(varobj) is EnvVariable: parsed_string = parsed_string.replace("@%s" %varobj.var_name, varobj.value())
+            elif type(varobj) is ShellVariable: parsed_string = parsed_string.replace("?{%s}" %varobj.cmd, varobj.value()).replace('\n', '', 1)
+
+        if len(var) > 0 or len(env_var) > 0:
+            if reading_var:
+                try:
+                    value, constant = vars_map[var]
+                    val = Parser.parse_string(value, line, vars_map, flags)  # 🔄!
+                    parsed_string = parsed_string.replace("$%s" %var, val)
+                except: raise BuildDocTracedError("'%s' is undefined" %var, 0 if flags.always_zero else 1, line+1, len(var))
+
+            elif reading_env_var:
+                value = environ[env_var] if env_var in environ else ''
+                parsed_string = parsed_string.replace("@%s" %env_var, value)
 
         return parsed_string
 
-    def map(self, tokens: list[Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable]):
+    @staticmethod
+    def validate_conditional_syntax(statement: str, always_zero: bool) -> str | None:
+        """ Ensures the syntax for an `if` or `elif` statement is valid, returning the condition if it is. """
+
+        condition, operator = '', ''
+        paren_open = False
+        code = 0 if always_zero else 1
+
+        for _c in range(len(statement)):
+            c = statement[_c]
+
+            if _c < 1 and c == Token.AMPERSAND.value: return None
+
+            if paren_open:
+                if c == Token.R_PAREN.value: paren_open = False
+                elif c == Token.L_PAREN.value: raise BuildDocError("unexpected '('.", code)
+                else: condition += c
+
+            else:
+                if not c == Token.WHITESPACE.value: operator += c
+                if c == Token.L_PAREN.value: paren_open = True
+                if c == Token.R_PAREN.value: raise BuildDocError("unexpected ')'.", code)
+
+        if paren_open: raise BuildDocError("unclosed '('.", code)
+        if len(condition) < 1: raise BuildDocError("Empty condition.", 1)
+
+        return condition
+
+    @staticmethod
+    def evaluate_condition(condition: str) -> bool:
+        """ Evaluates the condition in the `if` or `elif` statement to true or false. """
+
+        ...
+
+    def map(self, tokens: list[Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable | EnvVariable | Macro]):
         """ Maps variables with their values, and tasks with their commands. """
+
+        if self.verbose: BuildDocDebugMessage("TOKENS: %s" %([t.name for t in tokens]))
 
         # Parser vars.
         line, char = 1, 0
@@ -69,17 +143,21 @@ class Parser:
 
         # Dicts.
         vars_map: dict[str, tuple[str, bool]] = {}
-        task_map: dict[str, tuple[list[tuple[str, int]], bool]] = {}
+        task_map: dict[str, tuple[list[tuple[str | Macro, int]], bool]] = {}
 
         # Ensuring line 1 doesn't start with a whitespace or tab.
         if tokens[0] is Token.WHITESPACE or tokens[0] is Token.TAB: self.raise_unexpected_token(tokens[0], 1, 1)
 
         # Iterate over every token.
         for t in range(len(tokens)):
-            if self.verbose: BuildDocNote(f"Current line: {line}")
             char += 1
             token = tokens[t]
             astr_open = dstr_open or sstr_open
+
+            if token is Token.NEWLINE:
+                if self.verbose: BuildDocDebugMessage(f"Line {line} -> {line+1}")
+                line += 1
+                char = 0
 
             # Ignores comments until the line ends.
             if reading_comment and token is not Token.NEWLINE: continue
@@ -126,7 +204,7 @@ class Parser:
                                 private = True
                                 current_section = current_section[1:]
 
-                            if current_section in task_map: raise BuildDocError("duplicate task: '%s'" %current_section, self.status_code)
+                            if current_section in task_map: raise BuildDocError("duplicate task: '%s'." %current_section, self.status_code)
 
                             task_map[current_section] = ([], private)
 
@@ -172,14 +250,13 @@ class Parser:
 
                             cmd = command.strip()  # Close your eyes, the command is stripping!
                             if len(cmd) > 0:
-                                if self.verbose: print("COMMAND = %s" %cmd)
-                                task_map[current_section][0].append((cmd, line+3))
+                                if self.verbose: BuildDocDebugMessage("COMMAND = %s" %cmd)
+                                if cmd == "macro": ...
+                                else: task_map[current_section][0].append((cmd, line+3))
                                 command = ''
 
                             var_name, var_value = '', ''
                             reading_var_value = False
-                            line += 1
-                            char = 0
 
                         case Token.BROKEN_STR: raise BuildDocTracedError("unclosed string", self.status_code, line, char)
 
@@ -193,8 +270,8 @@ class Parser:
                         case tok if type(tok) is Variable:
                             value, constant = tok.value(vars_map)
 
-                            if self.verbose: print("value: %s" %value)
-                            if self.verbose: print("constant: %s" %("yes" if constant else "no"))
+                            if self.verbose: BuildDocDebugMessage("value: %s" %value)
+                            if self.verbose: BuildDocDebugMessage("constant: %s" %("yes" if constant else "no"))
 
                         case tok if type(tok) is LetterToken:
                             if bracket_open: section += tok.value
@@ -215,8 +292,10 @@ class Parser:
 
                                 var_name, var_value = '', ''
 
+                        case t if type(t) is Macro: task_map[current_section][0].append((t, line))
+
                         case _: ...
 
-        if self.verbose: print("VARS MAP:", vars_map)
-        if self.verbose: print("TASK MAP:", task_map)
+        if self.verbose: BuildDocDebugMessage("VARS MAP: %s" %vars_map)
+        if self.verbose: BuildDocDebugMessage("TASK MAP: %s" %task_map)
         return (vars_map, task_map)

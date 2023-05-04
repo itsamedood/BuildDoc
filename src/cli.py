@@ -1,8 +1,9 @@
 from ansi import Ansi
+from dotenv import load_dotenv
 from interpreter.flags import Flags
 from interpreter.runner import Runner
 from os import getcwd, scandir
-from out import BuildDocError, BuildDocSuccess
+from out import BuildDocDebugMessage, BuildDocError, BuildDocSuccess
 from sys import exit
 
 
@@ -36,7 +37,7 @@ class Cli:
                     case "always-zero": flags["always_zero"] = True
                     case "no-echo": flags["no_echo"] = True
                     case "verbose": flags["verbose"] = True
-                    case _: raise BuildDocError("unknown flag: '%s'" %f, 1)
+                    case _: raise BuildDocError("unknown flag: '%s'." %f, 1)
 
         return flags
 
@@ -45,11 +46,19 @@ class Cli:
         PATH = [f"{CWD}/{file.name}" for file in scandir(CWD) if file.name.lower() == "builddoc"]
         return PATH[0] if len(PATH) > 0 else None
 
+    def dotenv_in_root(self, verbose: bool) -> str | None:
+        CWD = getcwd()
+        for i in scandir(CWD):
+            if i.is_file() and (i.name == ".env" or i.name[-4:] == ".env"):
+                if verbose: BuildDocDebugMessage("Found %s in CWD!" %i.name)
+                return i.path
+
     def process(self) -> None:
         PATH = self.builddoc_path()
         task = self.args[1] if len(self.args) >= 2 and not self.args[1][0] == '-' else None
         cli_flags = [f for f in self.args if f[:2] == '--'] if len(self.args) >= 2 else None
         flags = Flags(cli_flags)
+        DOTENV = self.dotenv_in_root(flags.verbose)
 
         if flags.display_help:
             print(f"Usage: {Ansi.style.LIGHT}build [options] & [task] | [options] | [task]{Ansi.special.RESET}",
@@ -57,16 +66,17 @@ class Cli:
 
         elif flags.init:
             with open("BuildDoc", 'w') as builddoc:
-                TEXT = ["# Variables go up here.\n", "[main]", "echo \"Works!\""]
+                TEXT = ["NAME=\"world\"\n", "[main]", "echo \"Hello $NAME!\""]
 
                 [builddoc.write("%s\n" %line) for line in TEXT]
                 builddoc.close()
-
                 BuildDocSuccess("created './BuildDoc'!")
 
         else:
+            if DOTENV is not None: load_dotenv(DOTENV)
             if PATH is not None:
                 with open(PATH, 'r') as builddoc:
-                    try: Runner.run_task(builddoc.readlines(), task, flags)
+                    try: Runner.interpret(builddoc.readlines(), task, flags)
                     except IndexError: ...
-            else: raise BuildDocError("no builddoc found", 0 if flags.always_zero else 1)
+                    except RecursionError: raise BuildDocError("recursion limit reached.", 0 if flags.always_zero else 1)
+            else: raise BuildDocError("no builddoc found.", 0 if flags.always_zero else 1)

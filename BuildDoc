@@ -1,8 +1,13 @@
-TEST_VAR="wow this is working!!!"
+# Variables.
+MOM="@MOTHER"
+OS="?{uname -s | tr A-Z a-z}"
 
+# Default task.
 [main]
-echo "val of var TEST: $TEST_VAR" # IT WORKS!!!
-# %goto(priv)
-
-[.priv] # '.' makes this task private, meaning it can't be run from the command line, only via another task.
-echo "echoed from private task!"
+if ($OS is 'linux')
+&echo "Linux."
+elif ($OS is 'darwin')
+&echo "MacOS."
+else
+&echo "Not Linux."
+endif

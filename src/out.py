@@ -6,7 +6,7 @@ from typing import Any
 class BuildDocError(BaseException):
     """ Base class for all BuildDoc errors. """
     def __init__(self, message: str, code: int) -> None:
-        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: {message}.")
+        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: {message}")
         exit(code)
 
 
@@ -14,6 +14,17 @@ class BuildDocTracedError(BuildDocError):
     """ Error with a trace to the line & character. """
     def __init__(self, message: str, code: int, line: int, char: int) -> None:
         print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{line}{Ansi.special.RESET},{Ansi.style.LIGHT}{char}{Ansi.special.RESET}]: {message}.")
+        exit(code)
+
+
+class BuildDocMacroError(BuildDocError):
+    def __init__(self, macro_name: str, message: str, code: int) -> None:
+        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{macro_name}{Ansi.special.RESET}): {message}.")
+        exit(code)
+
+class BuildDocMacroArgumentError(BuildDocMacroError):
+    def __init__(self, macro_name: str, expected: int, got: int, code: int) -> None:
+        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{macro_name}{Ansi.special.RESET}): expected {expected} argument(s); got {got}.")
         exit(code)
 
 

@@ -3,6 +3,7 @@
 🔵 SOMEWHAT DONE
 🟡 WORKING ON
 🔴 NOT STARTED
+⚫️ CHANGED
 
 [CLI]
 🟢 Read arguments properly.
@@ -14,14 +15,27 @@
 🟢 Get task names read and raise an exception if any invalid character is read.
 🟢 Read variable names and raise an exception for invalid characters.
 🟢 Read variable values, and ensure that they are in between quotes, single or double.
-🟡 Read global variables.
-🔴 Replace variables in variable values. The value must belong to a variable declared before the current variable.
-🔴 Map variable names to values.
+⚫️ R̶e̶a̶d̶ ̶g̶l̶o̶b̶a̶l̶ ̶v̶a̶r̶i̶a̶b̶l̶e̶s̶.̶ (👇)
+🟢 Load environmental variables from `.env` (if it exists) in CWD.
+🟢 Replace variables in variable values.
+🟢 Map variable names to values.
 🟢 Read commands.
 🟢 Replace variables in commands.
 🟢 Map tasks to commands.
+🟢 Read environment variables.
+🟢 Replace environment variables with their values, or `''` if the variable doesn't exist.
+🟢 Read shell variables.
+🟢 Replace shell variable with result of shell command.
+🟢 Read conditional statements.
+🔵 Parse condition.
+
+
+[MACROS]
+🟢 Read macros and their arguments.
+🔵 Execute macros, and raise an error if it fails or if the macro doesn't exist.
 
 
 [RUNNER]
-🔵 Execute every command in given task.
+🟢 Make sure commands can be silenced with '&'.
+🟢 Execute every command in given task.
 🟢 Raise exception when a command fails.

@@ -2,6 +2,7 @@ from out import BuildDocError
 
 
 class Flags:
+    """ Represents flags passed in through the command line. """
     def __init__(self, flags: list[str] | None) -> None:
         self.allow_recursion = False
         self.always_zero = False
