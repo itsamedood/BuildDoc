@@ -1,6 +1,7 @@
 {
 	"configurations": [
 		{
+			/* DEBUG */
 			"name": "Debug",
 			"type": "python",
 			"request": "launch",
@@ -8,6 +9,35 @@
 			"args": [
 				"--always-zero", // So the debugger doesn't highlight errors raised by BuildDoc.
 				"--verbose" // For debugging purposes.
+			],
+			"python": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+			"pythonArgs": [
+				"-B",
+			],
+			"console": "integratedTerminal",
+			"justMyCode": true
+		},
+		/* COMPILE */
+		{
+			"name": "Compile",
+			"type": "python",
+			"request": "launch",
+			"program": "export.py",
+			"python": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+			"pythonArgs": [
+				"-B",
+			],
+			"console": "integratedTerminal",
+			"justMyCode": true
+		},
+		/* PACKAGE */
+		{
+			"name": "Package",
+			"type": "python",
+			"request": "launch",
+			"program": "export.py",
+			"args": [
+				"--zip"
 			],
 			"python": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
 			"pythonArgs": [

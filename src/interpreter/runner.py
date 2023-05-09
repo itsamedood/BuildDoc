@@ -1,7 +1,7 @@
 from interpreter.flags import Flags
 from interpreter.lexer import Lexer
 from interpreter.macro import Macro
-from interpreter.parser import Parser, ConditionalType
+from interpreter.parser import Parser
 from os import system
 from out import BuildDocDebugMessage, BuildDocError
 from typing import Any
@@ -40,30 +40,33 @@ class Runner:
 
             if in_conditional:
                 match cmd:
-                    case cmd if cmd[:2] == "if": raise BuildDocError("Nested conditions are not allowed.", 1)
+                    case cmd if cmd[:2] == "if": raise BuildDocError("nested if-statements are not allowed.", 1)
                     case cmd if cmd[:4] == "elif":
                         condition = Parser.validate_conditional_syntax(cmd, flags.always_zero)
 
                         if condition is not None:
-                            print("ELIF %s" %Parser.parse_string(condition, line-1, vars_map, flags))
-                            is_true = Parser.evaluate_condition(condition)
+                            if is_true: is_true = False
+                            else:
+                                if flags.verbose: BuildDocDebugMessage("ELIF %s" %Parser.parse_string(condition, line-1, vars_map, flags))
+                                is_true = Parser.evaluate_condition(Parser.parse_string(condition, line-1, vars_map, flags), 0 if flags.always_zero else 1, flags.verbose)
 
                     case cmd if cmd[:4] == "else":
-                        print("ELSE")
+                        if flags.verbose: BuildDocDebugMessage("ELSE")
+                        if is_true: is_true = False
                         if not any_was_true: else_hit = True
 
                     case "endif":
-                        print("ENDIF")
-                        print(conditional_commands)
+                        if flags.verbose: BuildDocDebugMessage("ENDIF")
+                        if flags.verbose: BuildDocDebugMessage("Conditional commands gathered: %s" %conditional_commands)
 
                         for cmd in conditional_commands:
                             c = Parser.parse_string(cmd, line-1, vars_map, flags)
+                            if flags.verbose:
+                                BuildDocDebugMessage("CMD: %s" %c)
+                                status = 0
+
                             if c[0] == '&': status = system(c[1:])
                             else: print(c); status = system(c)
-
-                            if flags.verbose:
-                                BuildDocDebugMessage("CMD: %s" %cmd)
-                                status = 0
 
                             if status > 0: Runner.abort(cmd, status)
 
@@ -71,7 +74,6 @@ class Runner:
 
                     case _:
                         # Check if condition is valid. If it is, append the command to conditional_commands.
-                        print(cmd)
                         if is_true or (else_hit and not any_was_true): conditional_commands.append(cmd)
 
                 if is_true: any_was_true = True
@@ -81,8 +83,8 @@ class Runner:
                         condition = Parser.validate_conditional_syntax(cmd, flags.always_zero)
 
                         if condition is not None:
-                            print("IF %s" %Parser.parse_string(condition, line-1, vars_map, flags))
-                            is_true = Parser.evaluate_condition(condition)
+                            if flags.verbose: BuildDocDebugMessage("IF %s" %Parser.parse_string(condition, line-1, vars_map, flags))
+                            is_true = Parser.evaluate_condition(Parser.parse_string(condition, line-1, vars_map, flags), 0 if flags.always_zero else 1, flags.verbose)
                             in_conditional = True
 
                     else:

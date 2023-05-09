@@ -1,13 +1,17 @@
-# Variables.
+# FOR TESTING PURPOSES #
+
+# VARIABLES #
 MOM="@MOTHER"
 OS="?{uname -s | tr A-Z a-z}"
 
-# Default task.
-[main]
+[main] # Default task.
+&echo $MOM
+&echo TESTING CONDITION!!
+
 if ($OS is 'linux')
 &echo "Linux."
 elif ($OS is 'darwin')
 &echo "MacOS."
 else
-&echo "Not Linux."
+&echo "Probably Windows."
 endif

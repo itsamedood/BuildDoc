@@ -27,7 +27,9 @@
 🟢 Read shell variables.
 🟢 Replace shell variable with result of shell command.
 🟢 Read conditional statements.
-🔵 Parse condition.
+🟢 Parse condition.
+🟢 Append commands only if the condition they are scoped in is valid.
+🟢 Run gathered conditional commands.
 
 
 [MACROS]

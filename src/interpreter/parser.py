@@ -6,13 +6,6 @@ from interpreter.macro import Macro
 from out import BuildDocDebugMessage, BuildDocError, BuildDocTracedError, BuildDocTracedWarning
 
 
-class ConditionalType(Enum):
-    IF = "if"
-    ELSEIF = "elif"
-    ELSE = "else"
-    ENDIF = "endif"
-
-
 class Parser:
     """ Parses the tokens from the lexer. """
 
@@ -121,10 +114,44 @@ class Parser:
         return condition
 
     @staticmethod
-    def evaluate_condition(condition: str) -> bool:
+    def evaluate_condition(condition: str, status: int, verbose: bool) -> bool:
         """ Evaluates the condition in the `if` or `elif` statement to true or false. """
 
-        ...
+        l_operand, logic_word, r_operand = '', '', ''
+        bracket_open = False
+        spaces = 0
+
+
+        for _c in range(len(condition)):
+            c = condition[_c]
+
+            match c:
+                case Token.WHITESPACE.value:
+                    if len(l_operand) < 1: raise BuildDocError("unexpected whitespace.", status)
+                    else:
+                        if not bracket_open: spaces += 1
+
+                # case Token.L_PAREN.value, Token.L_BRACK.value, Token.L_BRACE.value:
+                #     if bracket_open: raise BuildDocError(f"unexpected '{c}'", status)
+                #     else: bracket_open = True
+
+                # case Token.R_PAREN.value, Token.R_BRACK.value, Token.R_BRACE.value:
+                #     if not bracket_open: raise BuildDocError(f"unexpected '{c}'", status)
+                #     else: bracket_open = False
+
+                case c:
+                    if spaces < 1: l_operand += c
+                    elif spaces > 0 and spaces < 2: logic_word += c
+                    else: r_operand += c
+
+        if verbose: BuildDocDebugMessage(f"l_operand = {l_operand} | logic_word = {logic_word} | r_operand = {r_operand}")
+
+        match logic_word:
+            case "is": return l_operand == r_operand
+            case "isnt": return not l_operand == r_operand
+            case "greater": return l_operand > r_operand
+            case "less":  return l_operand < r_operand
+            case c: raise BuildDocError("'%s' is not a valid logic word." %logic_word, status)
 
     def map(self, tokens: list[Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable | EnvVariable | Macro]):
         """ Maps variables with their values, and tasks with their commands. """
