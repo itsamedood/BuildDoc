@@ -78,5 +78,6 @@ class Cli:
                 with open(PATH, 'r') as builddoc:
                     try: Runner.interpret(builddoc.readlines(), task, flags)
                     except IndexError: ...
+                    except KeyError: BuildDocError("Task '%s' not found." %task, 0 if flags.always_zero else 1)
                     except RecursionError: raise BuildDocError("recursion limit reached.", 0 if flags.always_zero else 1)
             else: raise BuildDocError("no builddoc found.", 0 if flags.always_zero else 1)

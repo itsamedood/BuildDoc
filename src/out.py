@@ -30,7 +30,7 @@ class BuildDocMacroArgumentError(BuildDocMacroError):
 
 class BuildDocWarning:
     """ Represents a warning in BuildDoc. """
-    def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.special.WARNING}warning{Ansi.special.RESET}: {message}.")
+    def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.special.WARNING}warning{Ansi.special.RESET}: {message}")
 
 
 class BuildDocTracedWarning:

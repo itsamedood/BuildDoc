@@ -1,4 +1,3 @@
-from enum import Enum
 from interpreter.tokens import *
 from interpreter.variable import *
 from interpreter.flags import Flags
@@ -118,7 +117,7 @@ class Parser:
         """ Evaluates the condition in the `if` or `elif` statement to true or false. """
 
         l_operand, logic_word, r_operand = '', '', ''
-        bracket_open = False
+        bracket_open, str_open = False, False
         spaces = 0
 
 
@@ -129,7 +128,7 @@ class Parser:
                 case Token.WHITESPACE.value:
                     if len(l_operand) < 1: raise BuildDocError("unexpected whitespace.", status)
                     else:
-                        if not bracket_open: spaces += 1
+                        if not bracket_open and not str_open: spaces += 1
 
                 # case Token.L_PAREN.value, Token.L_BRACK.value, Token.L_BRACE.value:
                 #     if bracket_open: raise BuildDocError(f"unexpected '{c}'", status)
@@ -151,7 +150,7 @@ class Parser:
             case "isnt": return not l_operand == r_operand
             case "greater": return l_operand > r_operand
             case "less":  return l_operand < r_operand
-            case c: raise BuildDocError("'%s' is not a valid logic word." %logic_word, status)
+            case c: raise BuildDocError("'%s' is not a valid keyword." %logic_word, status)
 
     def map(self, tokens: list[Token | LetterToken | NumberToken | UnknownToken | StringToken | Variable | EnvVariable | Macro]):
         """ Maps variables with their values, and tasks with their commands. """

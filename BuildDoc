@@ -5,13 +5,22 @@ MOM="@MOTHER"
 OS="?{uname -s | tr A-Z a-z}"
 
 [main] # Default task.
-&echo $MOM
-&echo TESTING CONDITION!!
-
 if ($OS is 'linux')
-&echo "Linux."
+%goto(linux)
 elif ($OS is 'darwin')
-&echo "MacOS."
+%goto(macos)
+elif ($OS is 'win64')
+%goto(windows)
 else
-&echo "Probably Windows."
+%warn(OS unsupported.)
 endif
+
+# Private tasks. These cannot be run from the command line, but only via the `goto` macro.
+[.linux]
+&echo "Linux."
+
+[.macos]
+&echo "MacOS."
+
+[.windows]
+&echo "Windows."

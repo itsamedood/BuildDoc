@@ -56,19 +56,19 @@ class Lexer:
                         tokens.append(EnvVariable(env_var_name, line, c, status_code))
 
                 elif reading_macro:
-                    print("Macro name: %s" %macro_name)
-                    print("Macro args: %s" %macro_args)
+                    if flags.verbose: BuildDocDebugMessage("Macro name: %s" %macro_name)
+                    if flags.verbose: BuildDocDebugMessage("Macro args: %s" %macro_args)
+
                     if not paren_open:
                         if cc in Token.LETTER.value: macro_name += cc
                         elif cc == Token.L_PAREN.value: paren_open = True
                         else: raise BuildDocTracedError("unexpected '%s'", 0 if flags.always_zero else 1, line, c+1)
                     else:
                         if cc == Token.R_PAREN.value:
-                            print("closed")
                             if len(macro_arg) > 0: macro_args.append(macro_arg)
                             tokens.append(Macro(macro_name, macro_args, line, flags, None, None))
 
-                            reading_macro, macro_name, macro_args = False, '', []
+                            reading_macro, paren_open, macro_name, macro_arg, macro_args, = False, False, '', '', []
 
                         elif not cc == Token.COMMA.value: macro_arg += cc
                         else:
