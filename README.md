@@ -14,7 +14,23 @@
 
 
 # What is BuildDoc?
-> BuildDoc is a script to automate tasks, very similar to [make](https://www.gnu.org/software/make/). It was designed with simplicity in mind. It also looks good on my resume.
+> BuildDoc is build tool very similar to [`make`](https://www.gnu.org/software/make/). You can use it to automate the build process for your project in a simple and elegant way.
+>
+> Although it may not be as flexible as `make`, it gets the job done, and is much more simple.
+>
+> Example:
+> ```ini
+> CC="gcc"
+> FLAGS="-Wall -Wextra -O2 -g"
+> TARGET="bin/program"
+> MAIN="src/main.c"
+>
+> [build]
+> $CC $FLAGS -o $TARGET $MAIN
+> &$TARGET
+> ```
 
 # Known Issues:
-> - Comparing 2 strings will fail if the first string has a space. If the second string has a space, the space will be ignored, and the string will be smushed together
+> - Comparing 2 strings will fail if the first string has a space. If the second string has a space, the space will be ignored, and the string will be smushed together.
+>
+> - Sometimes a traced error points to the wrong line and/or character.

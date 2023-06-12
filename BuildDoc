@@ -3,6 +3,7 @@
 # VARIABLES #
 MOM="@MOTHER"
 OS="?{uname -s | tr A-Z a-z}"
+SOURCE_FILES="~<src/*.c>"
 
 [main] # Default task.
 if ($OS is 'linux')
@@ -20,7 +21,9 @@ endif
 &echo "Linux."
 
 [.macos]
-&echo "MacOS."
+for (i in 0...10)
+&echo "i = $i"
+endfor
 
 [.windows]
 &echo "Windows."

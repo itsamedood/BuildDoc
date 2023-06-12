@@ -4,7 +4,6 @@ from interpreter.macro import Macro
 from interpreter.parser import Parser
 from os import system
 from out import BuildDocDebugMessage, BuildDocError
-from typing import Any
 
 class Runner:
     """ Responsible for running the program, calling the lexer & parser. """
@@ -40,6 +39,7 @@ class Runner:
 
             if in_conditional:
                 match cmd:
+                    # Logic.
                     case cmd if type(cmd) is str and cmd[:2] == "if": raise BuildDocError("nested if-statements are not allowed.", 1)
                     case cmd if type(cmd) is str and cmd[:4] == "elif":
                         condition = Parser.validate_conditional_syntax(cmd, flags.always_zero)
@@ -89,6 +89,9 @@ class Runner:
                             if flags.verbose: BuildDocDebugMessage("IF %s" %Parser.parse_string(condition, line-1, vars_map, flags))
                             is_true = Parser.evaluate_condition(Parser.parse_string(condition, line-1, vars_map, flags), 0 if flags.always_zero else 1, flags.verbose)
                             in_conditional = True
+
+                    elif cmd.strip()[:3] == "for":
+                        if flags.verbose: BuildDocDebugMessage("FOR LOOP")
 
                     else:
                         c = Parser.parse_string(cmd, line-1, vars_map, flags)

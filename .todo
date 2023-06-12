@@ -12,7 +12,7 @@
 
 
 [PARSER]
-🟢 Get task names read and raise an exception if any invalid character is read.
+🟢 Get task names read and raise an exception if any invalid character is read.
 🟢 Read variable names and raise an exception for invalid characters.
 🟢 Read variable values, and ensure that they are in between quotes, single or double.
 ⚫️ R̶e̶a̶d̶ ̶g̶l̶o̶b̶a̶l̶ ̶v̶a̶r̶i̶a̶b̶l̶e̶s̶.̶ (👇)
@@ -30,6 +30,13 @@
 🟢 Parse condition.
 🟢 Append commands only if the condition they are scoped in is valid.
 🟢 Run gathered conditional commands.
+🔴 Read wildcards (ex. ~<*.c>).
+🔴 Process wildcard.
+🔴 Set value of variable using wildcard to array of result ([main.c, other.c, ...]).
+🔴 Add array as a type. This is going to result in the code needing to be probably entirely rewritten...
+🔵 Read for-loops.
+🔴 Add loop variable as local variable and remove it when the for-loop concludes.
+🔴 Execute code in for-loop for every iteration.
 
 
 [MACROS]
