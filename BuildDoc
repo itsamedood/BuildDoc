@@ -1,10 +1,13 @@
 # FOR TESTING PURPOSES #
 
 # VARIABLES #
-MOM="@MOTHER"
-OS="?{uname -s | tr A-Z a-z}"
+MOM="@MOTHER" # Environmental variable. This one is loaded from `.env`.
+OS="?{uname -s | tr A-Z a-z}" # Shell variable. Anything between the braces is run and the result becomes the value (if code == 0).
 
 [main] # Default task.
+&python3 -B export.py
+
+[logic]
 if ($OS is 'linux')
 %goto(linux)
 elif ($OS is 'darwin')
