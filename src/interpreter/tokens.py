@@ -46,5 +46,5 @@ class Token(Enum):
     TAB             = '\t'
     NEWLINE         = '\n'
     BROKEN_STR      = ''
-    SOF             = None
     EOF             = None
+    UNKNOWN         = None

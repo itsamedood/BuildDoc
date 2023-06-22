@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 from interpreter.flags import Flags
 from interpreter.interpreter import Interpreter
 from out import Ansi

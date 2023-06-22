@@ -39,15 +39,15 @@ class Flags:
                         # "BuildDoc",
                         "Usage: build [flags] [task]",
                         "Flags:",
-                        "╭─ -allow-recursion | -ar",
-                        "⏐  -verbose         | -vb",
-                        "⏐  -debug           | -d",
-                        "⏐  -help            | -h",
-                        "⏐  -version         | -v",
-                        "╰─ -init            | -i",
+                        "  -allow-recursion | -ar",
+                        "  -verbose         | -vb",
+                        "  -debug           | -d",
+                        "  -help            | -h",
+                        "  -version         | -v",
+                        "  -init            | -i",
                     ]
 
-                    [print(l) for l in HELP]; exit(0 if self.debug else 1)
+                    [print(l) for l in HELP]; exit(0)
 
                 case "version" | 'v': print(f"BuildDoc {Ansi.style.LIGHT}v{BUILDDOC_VERSION}{Ansi.special.RESET}")
 
