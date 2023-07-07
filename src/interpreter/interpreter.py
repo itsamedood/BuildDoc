@@ -2,8 +2,7 @@ from interpreter.flags import Flags
 from interpreter.lexer import Lexer
 from interpreter.parser import Parser
 from interpreter.runner import Runner
-from os import getenv, scandir
-from sys import exit
+from os import getenv
 
 
 class Interpreter:
@@ -14,10 +13,7 @@ class Interpreter:
         self.parser = Parser(_flags)
         self.runner = Runner(_flags)
 
-    def interpret(self):
-        bdpath = "%s/builddoc" %self.PWD if "builddoc" in [f.name.lower() for f in scandir(self.PWD)] else None
-        if bdpath is None: exit(1)  # This shouldn't ever happen since this case is handled before this code is run.
-
-        with open(bdpath, 'r') as builddoc:
+    def interpret(self, _path: str):
+        with open(_path, 'r') as builddoc:
             code = builddoc.read()
-            self.parser.parse_tokens(self.lexer.tokenize(code))
+            self.TREE = self.parser.parse_tokens(self.lexer.tokenize(code))

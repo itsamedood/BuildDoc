@@ -2,8 +2,8 @@ from enum import Enum
 
 
 class Token(Enum):
-    LETTER = [c for c in "abcdefghijklmnopqrstuvwxyz"]
-    NUMBER = [n for n in "0123456789"]
+    LETTER = 'a'
+    NUMBER = 'n'
 
     # Brackets #
     L_PAREN         = '('
@@ -33,6 +33,7 @@ class Token(Enum):
     HYPHEN          = '-'
     UNDERSCORE      = '_'
     PIPELINE        = '|'
+    EXCLAMATION     = '!'
     COLON           = ':'
     SEMICOLON       = ';'
     CAROT           = '^'
@@ -46,5 +47,5 @@ class Token(Enum):
     TAB             = '\t'
     NEWLINE         = '\n'
     BROKEN_STR      = ''
-    EOF             = None
     UNKNOWN         = None
+    EOF             = None

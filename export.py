@@ -1,5 +1,5 @@
-from os import system, name
-from sys import argv
+from os import name, system
+from sys import argv, exit
 
 
 MAIN = "src/main.py"
@@ -15,8 +15,11 @@ OUTPATH = ''
 match OS:
     case "posix": SYS = "macos"
     case "linux": SYS = "linux"
-    case "win32": SYS = "windows"
+    case "nt": SYS = "windows"
     case _: SYS = None
+
+
+if SYS is None: print("Unknown OS."); exit(0)
 
 OUTPATH = "bin/%s" %SYS
 ZIP = f"release/{VERSION}/builddoc-{SYS}.zip"

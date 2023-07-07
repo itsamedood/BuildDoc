@@ -5,7 +5,12 @@ Install https://github.com/sandy081/vscode-todotasks if you're using VSCode!
 ✔ Read arguments properly. @done
 ✔ Add `debug` flag that tells BuildDoc not to exit with any code other than 0. @done
 ✘ Add `no-echo` flag that tells BuildDoc not to echo any command, even without the silence operator. @cancelled
-☐ Pass flags and specified task (if any) to the interpreter.
+✔ Pass flags and specified task (if any) to the interpreter. @done
+
+
+[LEXER]
+✔ Create list of all tokens. @done
+✔ Tokenize code. @done
 
 
 [PARSER]

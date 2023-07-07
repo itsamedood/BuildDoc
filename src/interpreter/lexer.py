@@ -9,11 +9,13 @@ class Lexer:
     def tokenize(self, _code: str) -> list[tuple[Token, str | int | None]]:
         tokens: list[tuple[Token, str | int | None]] = []
 
-        for c in range(len(_code)):
-            cc = _code[c]
-
+        for cc in _code:
             try: tokens.append((Token(cc), cc))
-            except ValueError: tokens.append((Token.UNKNOWN, cc))
+            except ValueError:
+                if cc.isalpha(): tokens.append((Token.LETTER, cc))
+                elif cc.isalnum(): tokens.append((Token.NUMBER, cc))
+                else: tokens.append((Token.UNKNOWN, cc))
+        tokens.append((Token.EOF, None))
 
         if self.FLAGS.verbose: BuildDocDebugMessage("Tokens: %s" %tokens)
         return tokens

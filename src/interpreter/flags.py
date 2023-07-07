@@ -1,5 +1,5 @@
 from enum import Enum
-from os import getenv
+from os import getcwd
 from out import Ansi, BuildDocError, BuildDocSuccess, BUILDDOC_VERSION
 from platform import system
 from sys import exit
@@ -25,7 +25,7 @@ class Flags:
         try: self._OS = OS(os)
         except ValueError: raise BuildDocError("unknown OS.", 0 if self.debug else 1)
 
-        self._PWD = getenv("PWD") if self._OS == OS.LINUX or self._OS == OS.MACOS else getenv("CWD")
+        self._PWD = getcwd()
         if self._PWD is None: raise BuildDocError("couldn't get PWD.", 0 if self.debug else 1)
 
         for flag in _flags:

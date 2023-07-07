@@ -15,7 +15,7 @@
 
 
 # What is BuildDoc?
-> BuildDoc is a build tool written in Python and compiled with [cx_freeze](https://pypi.org/project/cx-Freeze/). You can use it to automate the build process for your project with its ease-of-use and features.
+> BuildDoc is a build tool written in Python and compiled with [cx-Freeze](https://pypi.org/project/cx-Freeze/). You can use it to automate the build process for your project with its ease-of-use and features.
 
 <!-- > Example:
 > ```ini

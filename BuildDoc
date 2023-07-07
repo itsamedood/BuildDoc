@@ -1,29 +1,7 @@
 # FOR TESTING PURPOSES #
 
-# VARIABLES #
-MOM="@MOTHER" # Environmental variable. This one is loaded from `.env`.
-OS="?{uname -s | tr A-Z a-z}" # Shell variable. Anything between the braces is run and the result becomes the value (if code == 0).
+# VARIABLES.
+NAME="world"
 
 [main] # Default task.
-&python3 -B export.py
-
-[logic]
-if ($OS is 'linux')
-%goto(linux)
-elif ($OS is 'darwin')
-%goto(macos)
-elif ($OS is 'win64')
-%goto(windows)
-else
-%warn(OS unsupported.)
-endif
-
-# Private tasks. These cannot be run from the command line, but only via the `goto` macro.
-[.linux]
-&echo "Linux."
-
-[.macos]
-&echo "MacOS."
-
-[.windows]
-&echo "Windows."
+echo "Hello $NAME!"
