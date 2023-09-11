@@ -3,5 +3,9 @@
 # VARIABLES.
 NAME="world"
 
+
 [main] # Default task.
 echo "Hello $NAME!"
+
+[compile]
+cxfreeze --target-dir ./bin --target-name build src/main.py

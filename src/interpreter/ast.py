@@ -1,5 +1,6 @@
-from command import Command
-from variable import Variable
+from interpreter.command import Command
+from interpreter.macro import Macro
+from interpreter.variable import Variable
 
 
 class AST:
@@ -9,4 +10,4 @@ class AST:
 
     def __init__(self) -> None:
         self.VARIABLES: dict[str, Variable] = {}
-        self.TASKS: dict[str, list[Command]] = {}
+        self.TASKS: dict[str, list[Command | Macro]] = {}
