@@ -61,15 +61,8 @@ class Ansi:
         return f"\033[{_style};{_bg_color}m" if _text_color == 0 else f"\033[{_style};{_text_color}m"
 
 
-# I have no clue how this works, I stole this from ChatGPT lol.
-def get_line_from_call(): return getouterframes(currentframe(), 2)[1].lineno
 
-
-#def trace(func):
-#    def wrapper(*args, **kwargs):
-#        print("@%s" %get_line_from_call())
-#        return func(*args, **kwargs)
-#    return wrapper
+def get_line() -> int: return getouterframes(currentframe(), 2)[1].lineno
 
 
 # Error classes.
@@ -82,8 +75,9 @@ class BuildDocError(BaseException):
 
 class BuildDocTracedError(BuildDocError):
     """ Error with a trace to the line & character. """
-    def __init__(self, _message: str, _code: int, _line: int, _char: int) -> None:
+    def __init__(self, _message: str, _code: int, _line: int, _char: int, _debug = False) -> None:
         print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{_line}{Ansi.special.RESET},{Ansi.style.LIGHT}{_char}{Ansi.special.RESET}]: {_message}.")
+
         exit(_code)
 
 
@@ -121,5 +115,9 @@ class BuildDocSuccess:
 
 class BuildDocDebugMessage:
     """ A message from the interpreter when debugging. """
+
     def __init__(self, _message: Any, _verbose: bool) -> None:
-        if _verbose: print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET}: {_message}")
+        caller = getouterframes(currentframe(), 2)[1]
+        filename = caller.filename.split('\\')[-1].split('/')[-1]
+
+        if _verbose: print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET} @{filename}:{caller.lineno}: {_message}")
