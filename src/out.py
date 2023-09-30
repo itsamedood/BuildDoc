@@ -1,4 +1,6 @@
+from inspect import currentframe, getouterframes
 from sys import exit
+from typing import Any
 
 
 BUILDDOC_VERSION = "0.0.0"
@@ -53,60 +55,71 @@ class Ansi:
 
 
     @staticmethod
-    def new(style: int, text_color: int, bg_color: int) -> str:
+    def new(_style: int, _text_color: int, _bg_color: int) -> str:
         """ Creates a new ANSI color code. If the numbers are not valid, the effect is not produced. """
-        if text_color and bg_color == 0: return "\033[%sm" %style
-        return f"\033[{style};{bg_color}m" if text_color == 0 else f"\033[{style};{text_color}m"
+        if _text_color and _bg_color == 0: return "\033[%sm" %_style
+        return f"\033[{_style};{_bg_color}m" if _text_color == 0 else f"\033[{_style};{_text_color}m"
 
+
+# I have no clue how this works, I stole this from ChatGPT lol.
+def get_line_from_call(): return getouterframes(currentframe(), 2)[1].lineno
+
+
+#def trace(func):
+#    def wrapper(*args, **kwargs):
+#        print("@%s" %get_line_from_call())
+#        return func(*args, **kwargs)
+#    return wrapper
 
 
 # Error classes.
 class BuildDocError(BaseException):
     """ Base class for all BuildDoc errors. """
-    def __init__(self, message: str, code: int) -> None:
-        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: {message}")
-        exit(code)
+    def __init__(self, _message: str, _code: int) -> None:
+        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: {_message}")
+        exit(_code)
 
 
 class BuildDocTracedError(BuildDocError):
     """ Error with a trace to the line & character. """
-    def __init__(self, message: str, code: int, line: int, char: int) -> None:
-        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{line}{Ansi.special.RESET},{Ansi.style.LIGHT}{char}{Ansi.special.RESET}]: {message}.")
-        exit(code)
+    def __init__(self, _message: str, _code: int, _line: int, _char: int) -> None:
+        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{_line}{Ansi.special.RESET},{Ansi.style.LIGHT}{_char}{Ansi.special.RESET}]: {_message}.")
+        exit(_code)
 
 
 class BuildDocMacroError(BuildDocError):
-    def __init__(self, macro_name: str, message: str, code: int) -> None:
-        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{macro_name}{Ansi.special.RESET}): {message}.")
-        exit(code)
+    def __init__(self, _macro_name: str, _message: str, _code: int) -> None:
+        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{_macro_name}{Ansi.special.RESET}): {_message}.")
+        exit(_code)
 
 class BuildDocMacroArgumentError(BuildDocMacroError):
-    def __init__(self, macro_name: str, expected: int, got: int, code: int) -> None:
-        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{macro_name}{Ansi.special.RESET}): expected {expected} argument(s); got {got}.")
-        exit(code)
+    def __init__(self, _macro_name: str, _expected: int, _got: int, _code: int) -> None:
+        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{_macro_name}{Ansi.special.RESET}): expected {_expected} argument(s); got {_got}.")
+        exit(_code)
 
 
 class BuildDocWarning:
     """ Represents a warning in BuildDoc. """
-    def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.special.WARNING}warning{Ansi.special.RESET}: {message}")
+    def __init__(self, _message: str) -> None: print(f"builddoc: {Ansi.special.WARNING}warning{Ansi.special.RESET}: {_message}")
 
 
 class BuildDocTracedWarning:
     """ Represents a warning with a trace in BuildDoc. """
-    def __init__(self, message: str, line: int, char: int) -> None: print(f"builddoc: {Ansi.special.WARNING}warning{Ansi.special.RESET}: [{Ansi.text.BLACK}{line}{Ansi.special.RESET},{Ansi.text.BLACK}{char}{Ansi.special.RESET}]: {message}.")
+    def __init__(self, _message: str, _line: int, _char: int) -> None: print(f"builddoc: {Ansi.special.WARNING}warning{Ansi.special.RESET}: [{Ansi.text.BLACK}{_line}{Ansi.special.RESET},{Ansi.text.BLACK}{_char}{Ansi.special.RESET}]: {_message}.")
 
 
 class BuildDocNote:
     """ Represents a note from the BuildDoc interpreter. """
-    def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.special.NOTE}note{Ansi.special.RESET}:", message)
+    def __init__(self, _message: str) -> None: print(f"builddoc: {Ansi.special.NOTE}note{Ansi.special.RESET}:", _message)
 
 
 class BuildDocSuccess:
-    def __init__(self, message: str) -> None:
-        print(f"builddoc: {Ansi.special.SUCCESS}success{Ansi.special.RESET}: {message}")
+    def __init__(self, _message: str) -> None:
+        print(f"builddoc: {Ansi.special.SUCCESS}success{Ansi.special.RESET}: {_message}")
         exit(0)
 
 
 class BuildDocDebugMessage:
     """ A message from the interpreter when debugging. """
-    def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET}: {message}")
+    def __init__(self, _message: Any, _verbose: bool) -> None:
+        if _verbose: print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET}: {_message}")

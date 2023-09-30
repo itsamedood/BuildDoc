@@ -2,8 +2,8 @@ from enum import Enum
 
 
 class Token(Enum):
-    LETTER = 'a'
-    NUMBER = 'n'
+    LETTER = ''
+    NUMBER = ''
 
     # Brackets #
     L_PAREN         = '('
