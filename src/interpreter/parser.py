@@ -2,7 +2,7 @@ from interpreter.variable import *
 from interpreter.ast import AST
 from interpreter.flags import Flags
 from interpreter.tokens import Token
-from out import BuildDocTracedError, BuildDocDebugMessage, get_line
+from out import BuildDocDebugMessage, BuildDocTracedError
 
 
 class Parser:
@@ -32,14 +32,14 @@ class Parser:
             if ignore: continue
 
             if bracket_open and token is not Token.R_BRACKET:
-                if token is not Token.LETTER: self.raise_unexpected(str(value), line, char, get_line())
+                if token is not Token.LETTER: self.raise_unexpected(str(value), line, char)
                 else: task += str(value)
 
             if reading_vars:
                 if reading_var_name:
                     if token is Token.LETTER: var_name += str(value)
                     elif token is Token.EQUAL: reading_var_name = False
-                    else: self.raise_unexpected(str(value), line, char, get_line())
+                    else: self.raise_unexpected(str(value), line, char)
 
                 else:
                     if token is Token.D_QUOTE: d_quote = not d_quote
@@ -50,10 +50,18 @@ class Parser:
 
                     if not d_quote:
                         BuildDocDebugMessage(f"{var_name} = {var_value}", self.FLAGS.verbose)
-                        TREE.VARIABLES[var_name] = Variable(var_name, var_value, VariableType.REGULAR)
+                        if var_name in TREE.VARIABLES: raise BuildDocTracedError("var %s already declared" %var_name, 0 if self.FLAGS.debug else 1, line, char, self.FLAGS.debug)
+                        else: TREE.VARIABLES[var_name] = Variable(var_name, var_value, VariableType.REGULAR)
+
+                        var_name, var_value = '', ''
                         reading_vars = False
 
                 continue
+
+            if len(current_task) > 0:
+                if token is Token.L_BRACKET: ...
+                elif token is Token.NEWLINE: ...
+                else: ...
 
             match token:
                 case Token.LETTER:
@@ -70,11 +78,11 @@ class Parser:
                 case Token.R_BRACE: ...
 
                 case Token.L_BRACKET:
-                    if bracket_open: self.raise_unexpected('[', line, char, get_line())
+                    if bracket_open: self.raise_unexpected('[', line, char)
                     else: bracket_open, reading_vars = True, False
 
                 case Token.R_BRACKET:
-                    if not bracket_open: self.raise_unexpected(']', line, char, get_line())
+                    if not bracket_open: self.raise_unexpected(']', line, char)
                     else: bracket_open = False
 
                     current_task, task = task, ''
@@ -130,6 +138,11 @@ class Parser:
 
         return TREE
 
-    def raise_unexpected(self, _unexpected_char: str, _line: int, _char: int, _from_line: int | None = None) -> None:
-        if self.FLAGS.debug and _from_line is not None: raise BuildDocTracedError(f"unexpected '{_unexpected_char}' @{_from_line}", 0 if self.FLAGS.debug else 1, _line, _char)
-        else: raise BuildDocTracedError("unexpected %s" %_unexpected_char, 0 if self.FLAGS.debug else 1, _line, _char)
+    def parse_text(self, _text: str) -> str:
+        """ Replaces variables of all types in `_text`. """
+
+        for i, c in enumerate(_text): BuildDocDebugMessage(c, self.FLAGS.verbose)
+
+        return _text
+
+    def raise_unexpected(self, _unexpected_char: str, _line: int, _char: int) -> None: raise BuildDocTracedError("unexpected %s" %_unexpected_char, 0 if self.FLAGS.debug else 1, _line, _char, self.FLAGS.debug)

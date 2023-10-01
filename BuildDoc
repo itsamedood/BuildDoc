@@ -1,8 +1,9 @@
 NAME="'world'"
-
+SOURCE_FILES="src"
+MAIN="$SOURCE_FILES/main.py"
 
 [main] # Default task.
 echo "Hello $NAME!"
 
 [compile]
-cxfreeze --target-dir./bin --target-name build src/main.py
+cxfreeze --target-dir./bin --target-name build $MAIN

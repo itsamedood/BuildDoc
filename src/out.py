@@ -61,7 +61,7 @@ class Ansi:
         return f"\033[{_style};{_bg_color}m" if _text_color == 0 else f"\033[{_style};{_text_color}m"
 
 
-
+# Gets the line number this function is called on.
 def get_line() -> int: return getouterframes(currentframe(), 2)[1].lineno
 
 
@@ -75,21 +75,27 @@ class BuildDocError(BaseException):
 
 class BuildDocTracedError(BuildDocError):
     """ Error with a trace to the line & character. """
-    def __init__(self, _message: str, _code: int, _line: int, _char: int, _debug = False) -> None:
-        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{_line}{Ansi.special.RESET},{Ansi.style.LIGHT}{_char}{Ansi.special.RESET}]: {_message}.")
 
+    def __init__(self, _message: str, _code: int, _line: int, _char: int, _debug: bool) -> None:
+        caller = getouterframes(currentframe(), 2)[1]
+        filename = caller.filename.split('\\')[-1].split('/')[-1]
+
+        if _debug:
+            print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{_line}{Ansi.special.RESET},{Ansi.style.LIGHT}{_char}{Ansi.special.RESET}]: @{filename}:{caller.lineno}: {_message}.")
+        else:
+            print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{_line}{Ansi.special.RESET},{Ansi.style.LIGHT}{_char}{Ansi.special.RESET}]: {_message}.")
         exit(_code)
 
 
-class BuildDocMacroError(BuildDocError):
-    def __init__(self, _macro_name: str, _message: str, _code: int) -> None:
-        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{_macro_name}{Ansi.special.RESET}): {_message}.")
-        exit(_code)
+# class BuildDocMacroError(BuildDocError):
+#     def __init__(self, _macro_name: str, _message: str, _code: int) -> None:
+#         print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{_macro_name}{Ansi.special.RESET}): {_message}.")
+#         exit(_code)
 
-class BuildDocMacroArgumentError(BuildDocMacroError):
-    def __init__(self, _macro_name: str, _expected: int, _got: int, _code: int) -> None:
-        print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{_macro_name}{Ansi.special.RESET}): expected {_expected} argument(s); got {_got}.")
-        exit(_code)
+# class BuildDocMacroArgumentError(BuildDocMacroError):
+#     def __init__(self, _macro_name: str, _expected: int, _got: int, _code: int) -> None:
+#         print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{_macro_name}{Ansi.special.RESET}): expected {_expected} argument(s); got {_got}.")
+#         exit(_code)
 
 
 class BuildDocWarning:
@@ -117,7 +123,8 @@ class BuildDocDebugMessage:
     """ A message from the interpreter when debugging. """
 
     def __init__(self, _message: Any, _verbose: bool) -> None:
-        caller = getouterframes(currentframe(), 2)[1]
-        filename = caller.filename.split('\\')[-1].split('/')[-1]
+        if _verbose:
+            caller = getouterframes(currentframe(), 2)[1]
+            filename = caller.filename.split('\\')[-1].split('/')[-1]
 
-        if _verbose: print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET} @{filename}:{caller.lineno}: {_message}")
+            print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET} @{filename}:{caller.lineno}: {_message}")
