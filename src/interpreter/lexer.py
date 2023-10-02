@@ -17,5 +17,5 @@ class Lexer:
                 else: tokens.append((Token.UNKNOWN, cc))
         tokens.append((Token.EOF, None))
 
-        if self.FLAGS.verbose: BuildDocDebugMessage("TOKENS: %s" %tokens, self.FLAGS.verbose)
+        if self.FLAGS.verbose: BuildDocDebugMessage("TOKENS: %s" %tokens, _verbose=self.FLAGS.verbose)
         return tokens

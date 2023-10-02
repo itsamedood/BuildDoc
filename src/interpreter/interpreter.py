@@ -2,7 +2,6 @@ from interpreter.flags import Flags
 from interpreter.lexer import Lexer
 from interpreter.parser import Parser
 from interpreter.runner import Runner
-from out import BuildDocDebugMessage
 from os import getenv
 
 
@@ -18,5 +17,5 @@ class Interpreter:
         with open(_path, 'r') as builddoc:
             code = builddoc.read()
             self.TREE = self.parser.parse_tokens(self.lexer.tokenize(code))
-            BuildDocDebugMessage("TASKS: %s" %self.TREE.TASKS, self.FLAGS.verbose)
-            BuildDocDebugMessage("VARIABLES: %s" %self.TREE.VARIABLES, self.FLAGS.verbose)
+            self.TREE.print_vars()
+            self.TREE.print_tasks()

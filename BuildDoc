@@ -5,5 +5,5 @@ MAIN="$SOURCE_FILES/main.py"
 [main] # Default task.
 echo "Hello $NAME!"
 
-[compile]
+[compile_program]
 cxfreeze --target-dir./bin --target-name build $MAIN

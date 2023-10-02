@@ -1,4 +1,5 @@
 from inspect import currentframe, getouterframes
+from io import StringIO
 from sys import exit
 from typing import Any
 
@@ -65,6 +66,14 @@ class Ansi:
 def get_line() -> int: return getouterframes(currentframe(), 2)[1].lineno
 
 
+def clear_strios(*_strs: StringIO) -> None:
+    """ Turns given `StringIO` instances into instances with empty string values. """
+
+    for sio in _strs:
+        sio.seek(0)
+        sio.truncate(0)
+
+
 # Error classes.
 class BuildDocError(BaseException):
     """ Base class for all BuildDoc errors. """
@@ -122,9 +131,10 @@ class BuildDocSuccess:
 class BuildDocDebugMessage:
     """ A message from the interpreter when debugging. """
 
-    def __init__(self, _message: Any, _verbose: bool) -> None:
+    def __init__(self, *_values: Any, _verbose: bool = False) -> None:
         if _verbose:
             caller = getouterframes(currentframe(), 2)[1]
             filename = caller.filename.split('\\')[-1].split('/')[-1]
 
-            print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET} @{filename}:{caller.lineno}: {_message}")
+            print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET} @{filename}:{caller.lineno}:", end=' ')
+            [print(v, end='\n') if i == len(_values)-1 else print(v, end=' ') for i, v in enumerate(_values)]
