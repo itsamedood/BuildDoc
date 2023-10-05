@@ -93,7 +93,7 @@ class BuildDocTracedError(BuildDocError):
             print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{_line}{Ansi.special.RESET},{Ansi.style.LIGHT}{_char}{Ansi.special.RESET}]: @{filename}:{caller.lineno}: {_message}.")
         else:
             print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{_line}{Ansi.special.RESET},{Ansi.style.LIGHT}{_char}{Ansi.special.RESET}]: {_message}.")
-        exit(_code)
+        exit(_code if not _debug else 0)
 
 
 # class BuildDocMacroError(BuildDocError):

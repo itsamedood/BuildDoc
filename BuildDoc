@@ -1,4 +1,5 @@
 NAME="'world'"
+MESSAGE="Hello $NAME"
 SOURCE_FILES="src"
 MAIN="$SOURCE_FILES/main.py"
 

@@ -16,7 +16,7 @@ class AST:
 
     def print_vars(self) -> None:
         for var_name in self.VARIABLES:
-            BuildDocDebugMessage("%s =" %var_name, self.VARIABLES[var_name].value, _verbose=True)
+            BuildDocDebugMessage("%s =" %var_name, self.VARIABLES[var_name].value, _verbose=self.FLAGS.verbose)
 
     def print_tasks(self) -> None:
         for task_name in self.TASKS:
