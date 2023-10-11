@@ -85,15 +85,15 @@ class BuildDocError(BaseException):
 class BuildDocTracedError(BuildDocError):
     """ Error with a trace to the line & character. """
 
-    def __init__(self, _message: str, _code: int, _line: int, _char: int, _debug: bool) -> None:
+    def __init__(self, _message: str, _code: int, _line: int, _char: int, _verbose: bool) -> None:
         caller = getouterframes(currentframe(), 2)[1]
         filename = caller.filename.split('\\')[-1].split('/')[-1]
 
-        if _debug:
+        if _verbose:
             print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{_line}{Ansi.special.RESET},{Ansi.style.LIGHT}{_char}{Ansi.special.RESET}]: @{filename}:{caller.lineno}: {_message}.")
         else:
             print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: [{Ansi.style.LIGHT}{_line}{Ansi.special.RESET},{Ansi.style.LIGHT}{_char}{Ansi.special.RESET}]: {_message}.")
-        exit(_code if not _debug else 0)
+        exit(_code)
 
 
 # class BuildDocMacroError(BuildDocError):

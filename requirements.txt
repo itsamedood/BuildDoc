@@ -1,1 +1,1 @@
-cx_Freeze==6.15.9
+PyInstaller==6.0.0

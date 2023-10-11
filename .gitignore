@@ -1,4 +1,6 @@
 /.mypy_cache
 /bin
+/build
 /og
 *.DS_Store
+*.spec

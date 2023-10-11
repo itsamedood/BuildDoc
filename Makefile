@@ -4,10 +4,13 @@ ARGS=-d -vb
 EXPORT=export.py
 
 debug:
-	python3 $(FLAGS) $(MAIN) $(ARGS)
+	@printf Debugging...\n\n
+	@python3 $(FLAGS) $(MAIN) $(ARGS)
 
 compile:
-	python3 $(FLAGS) $(EXPORT)
+	@printf Compiling...\n\n
+	@python3 $(FLAGS) $(EXPORT)
 
 package:
-	python3 $(FLAGS) $(EXPORT) --zip
+	@printf Packaging...\n\n
+	@python3 $(FLAGS) $(EXPORT) --zip

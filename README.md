@@ -15,9 +15,9 @@
 
 
 # What is BuildDoc?
-> BuildDoc is a build tool written in Python and compiled with [cx-Freeze](https://pypi.org/project/cx-Freeze/). You can use it to automate the build process for your project with its ease-of-use and features.
+> A build tool for automatically running, compiling, and managing projects.
 
-<!-- > Example:
+> Example:
 > ```ini
 > CC="gcc"
 > FLAGS="-Wall -Wextra -O2 -g"
@@ -25,6 +25,8 @@
 > MAIN="src/main.c"
 >
 > [build]
+> &echo "Building program..."
 > $CC $FLAGS -o $TARGET $MAIN
-> &$TARGET
-> ``` -->
+> $TARGET
+> &echo "Done!"
+> ```

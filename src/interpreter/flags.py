@@ -15,36 +15,30 @@ class Flags:
     """ Represents flags passed in through the command line. """
 
     def __init__(self, _flags: list[str]):
-        self.allow_recursion = False
-        self.debug = False
         self.verbose = False
         self.as_list = _flags
         self._OS = None
 
         os = system()
         try: self._OS = OS(os)
-        except ValueError: raise BuildDocError("unknown OS.", 0 if self.debug else 1)
+        except ValueError: raise BuildDocError("unknown OS.", 1)
 
         self._PWD = getcwd()
-        if self._PWD is None: raise BuildDocError("couldn't get PWD.", 0 if self.debug else 1)
+        if self._PWD is None: raise BuildDocError("couldn't get PWD.", 1)
 
         for flag in _flags:
             match flag:
-                case "allow-recursion" | "ar": self.allow_recursion = True  # Determines if a task is allowed to call itself.
                 case "verbose" | "vb": self.verbose = True  # Prints extra info, mostly for debugging.
-                case "debug" | 'd': self.debug = True  # If true, the program will always exit with status code `0`.
 
                 case "help" | 'h':  # Displays help text.
                     HELP = [
                         # "BuildDoc",
                         "Usage: build [flags] [task]",
                         "Flags:",
-                        "  -allow-recursion | -ar",
-                        "  -verbose         | -vb",
-                        "  -debug           | -d",
-                        "  -help            | -h",
-                        "  -version         | -v",
-                        "  -init            | -i",
+                        "  -verbose | -vb",
+                        "  -help    | -h",
+                        "  -version | -v",
+                        "  -init    | -i",
                     ]
 
                     [print(l) for l in HELP]; exit(0)

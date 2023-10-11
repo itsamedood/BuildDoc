@@ -1,5 +1,5 @@
 from interpreter.variable import *
-from dotenv.dotenv import DotEnv
+from bdotenv.dotenv import DotEnv
 from interpreter.ast import AST
 from interpreter.flags import Flags
 from interpreter.tokens import Token
@@ -15,6 +15,7 @@ class Parser:
 
         # Read and parse all `.env` in cwd.
         self.TREE.VARIABLES |= DotEnv.read()
+        # [BuildDocDebugMessage(f"(@) {v} = {self.TREE.VARIABLES[v].value} {type(self.TREE.VARIABLES[v].value)}", _verbose=self.FLAGS.verbose) for v in self.TREE.VARIABLES]
 
     def parse_tokens(self, _tokens: list[tuple[Token, str | int | None]]) -> AST:
         # General variables.
@@ -55,7 +56,7 @@ class Parser:
 
                     if not d_quote:
                         BuildDocDebugMessage(f"{var_name.getvalue()} = {var_value.getvalue()}", _verbose=self.FLAGS.verbose)
-                        if var_name in self.TREE.VARIABLES: raise BuildDocTracedError("var %s already declared" %var_name, 0 if self.FLAGS.debug else 1, self.line, self.char, self.FLAGS.debug)
+                        if var_name in self.TREE.VARIABLES: raise BuildDocTracedError("var %s already declared" %var_name, 1, self.line, self.char, self.FLAGS.verbose)
                         else:
                             vv = var_value.getvalue()
                             vv = self.parse_text(vv)
@@ -176,7 +177,7 @@ class Parser:
                 BuildDocDebugMessage("Got: %s" %vn_val, _verbose=self.FLAGS.verbose)
 
                 if vn_val in self.TREE.VARIABLES:
-                    _text = _text.replace('$%s' %vn_val, self.TREE.VARIABLES[vn_val].value)
+                    _text = _text.replace('$%s' %vn_val, str(self.TREE.VARIABLES[vn_val].value))
 
         BuildDocDebugMessage(_text, _verbose=self.FLAGS.verbose)
         return _text
@@ -184,9 +185,9 @@ class Parser:
     def parse_var_values(self) -> None:
         for var_name in self.TREE.VARIABLES:
             var = self.TREE.VARIABLES[var_name]
-            var.value = self.parse_text(var.value)
+            var.value = self.parse_text(str(var.value))
             BuildDocDebugMessage("After parse: %s" %var.value, _verbose=True)
 
     def raise_unexpected(self, _unexpected_char: str, _line: int, _char: int) -> None:
         """ Shortcut for raising a traced error for an unexpected character. """
-        raise BuildDocTracedError("unexpected %s" %_unexpected_char, 1, _line, _char, self.FLAGS.debug)
+        raise BuildDocTracedError("unexpected %s" %_unexpected_char, 1, _line, _char, self.FLAGS.verbose)

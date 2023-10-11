@@ -7,40 +7,12 @@
 			"request": "launch",
 			"program": "src/main.py",
 			"args": [
-				"-d", // So the debugger doesn't highlight errors raised by BuildDoc.
 				"-vb" // For debugging purposes.
 			],
 			"pythonArgs": [
 				"-B",
 			],
-			"console": "integratedTerminal",
-			"justMyCode": true
-		},
-		/* COMPILE */
-		{
-			"name": "Compile",
-			"type": "python",
-			"request": "launch",
-			"program": "export.py",
-			"pythonArgs": [
-				"-B",
-			],
-			"console": "integratedTerminal",
-			"justMyCode": true
-		},
-		/* PACKAGE */
-		{
-			"name": "Package",
-			"type": "python",
-			"request": "launch",
-			"program": "export.py",
-			"args": [
-				"--zip"
-			],
-			"pythonArgs": [
-				"-B",
-			],
-			"console": "integratedTerminal",
+			"console": "internalConsole",
 			"justMyCode": true
 		}
 	]

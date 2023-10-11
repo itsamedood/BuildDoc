@@ -27,7 +27,7 @@ ZIP = f"release/{VERSION}/builddoc-{SYS}.zip"
 
 def compile():
     print("🛠 Compiling... 🛠\n-----------------")
-    system(f"cxfreeze --target-dir ./bin/{SYS} --target-name {BINARY} ./{MAIN}")
+    system(f"pyinstaller --onefile --distpath ./bin/{SYS} --name {BINARY} ./{MAIN}")
     print("🛠️ Finished compiling! 🛠️\n------------------------")
 
 def package():
