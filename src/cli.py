@@ -15,7 +15,9 @@ class Cli:
         task = None
         if len(self.ARGS) > 0 and not self.ARGS[0][0] == '-': task = self.ARGS[0]
 
-        try: global path; path = [f"{self.CWD}/{f.name}" for f in scandir(self.CWD) if f.name.lower() == "builddoc"][0]
+        try:
+            global path
+            path = [f"{self.CWD}/{f.name}" for f in scandir(self.CWD) if f.name.lower() == "builddoc"][0]
         except IndexError: raise BuildDocError("BuildDoc not found.", 1)
 
         intrptr = Interpreter(self.FLAGS)

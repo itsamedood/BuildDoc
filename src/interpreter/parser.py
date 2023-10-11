@@ -14,7 +14,7 @@ class Parser:
         self.line, self.char, = 1, 0
 
         # Read and parse all `.env` in cwd.
-        self.TREE.VARIABLES |= DotEnv.read()
+        self.TREE.VARIABLES |= DotEnv().read()
         # [BuildDocDebugMessage(f"(@) {v} = {self.TREE.VARIABLES[v].value} {type(self.TREE.VARIABLES[v].value)}", _verbose=self.FLAGS.verbose) for v in self.TREE.VARIABLES]
 
     def parse_tokens(self, _tokens: list[tuple[Token, str | int | None]]) -> AST:
@@ -157,8 +157,13 @@ class Parser:
         reading_var, reading_env_var = False, False
 
         for i, c in enumerate(_text):
-            if c == Token.DOLLAR.value: reading_var = True; continue
-            if c == Token.AT.value: reading_env_var = True; continue
+            if c == Token.DOLLAR.value:
+                reading_var = True
+                continue
+
+            if c == Token.AT.value:
+                reading_env_var = True
+                continue
 
             if reading_var:
                 if i == len(_text)-1:

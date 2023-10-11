@@ -41,7 +41,8 @@ class Flags:
                         "  -init    | -i",
                     ]
 
-                    [print(l) for l in HELP]; exit(0)
+                    [print(l) for l in HELP]
+                    exit(0)
 
                 case "version" | 'v': print(f"BuildDoc {Ansi.style.LIGHT}v{BUILDDOC_VERSION}{Ansi.special.RESET}")
 
