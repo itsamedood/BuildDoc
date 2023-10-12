@@ -1,5 +1,5 @@
 from interpreter.variable import *
-from bdotenv.out import DotEnvTracedError
+from bdotenv.out import DotEnvError, DotEnvTracedError
 from io import StringIO
 from re import match
 from os import getcwd, scandir
@@ -22,16 +22,13 @@ class DotEnv:
                 lines = dotenv.read()
 
                 # Read through and just get vars and their values.
-                for i, c in enumerate(lines):
+                for c in lines:
                     char += 1
                     if c == '#': ignore = True
                     elif c == '\n':
                         if ignore: ignore = False
                         else:
                             var_name = name.getvalue().strip()
-                            print(var_name, self.validate_var_name(var_name))
-
-                            # if ' ' in [c for c in var_name if c == ' ']: raise DotEnvTracedError("spaces not allowed in variable name.", 1, line, char)
                             if var_name in got: raise DotEnvTracedError("%s already declared." %var_name, 1, line, char)
 
                             var_value = value.getvalue()
@@ -46,10 +43,7 @@ class DotEnv:
                         if ignore: continue
                         if c == '=': reading_value = True
 
-                        elif not reading_value:
-                            # if c.isdigit() and len(name.getvalue()) < 1: raise DotEnvTracedError("var name cannot start with a digit.", 1, line, char)
-                            # elif c == '-': raise DotEnvTracedError("var name cannot contain '-', use '_' instead.", 1, line, char)
-                            name.write(c)
+                        elif not reading_value: name.write(c)
 
                         else: value.write(c)
 
@@ -75,35 +69,41 @@ class DotEnv:
             # (str, bool) -> value, whether the string supports ${}, which means it must use "".
             if isinstance(value, tuple):
                 val, valid = value
-                # print(f"{val} {type(val)} is {valid} @{line}:{char}")
 
                 # Parse value (${}).
                 if valid:
                     tlvar = StringIO()
                     dollar, lcurly = False, False
 
-                    for i, c in enumerate(val):
+                    for c in val:
                         match c:
-                            case '$': dollar = not dollar
+                            case '$': dollar = True
                             case '{' if dollar: lcurly, dollar = True, False
 
                             case '}' if lcurly:
                                 tlval = tlvar.getvalue()
-                                tlvobj, line, char = got[tlval]
-                                val = val.replace("${%s}" %tlval, str(tlvobj.value))
-                                lcurly = False
+                                if self.validate_var_name(tlval):
+                                    if tlval in got:
+                                        tlvobj = got[tlval][0]
+                                        val = val.replace("${%s}" %tlval, str(tlvobj.value))
+                                        lcurly, dollar = False, False
 
-                            case _ if lcurly: tlvar.write(c)
+                                    else: raise DotEnvError(f"{tlval} not declared (line {line}).", 1)
+                                else: raise DotEnvError(f"{tlval} is invalid (line {line}).", 1)
+
+                            case _ if lcurly:
+                                dollar = False
+                                tlvar.write(c)
+
+                            case _: dollar = False
 
                 value = val
-
             var.value = value
             pairs[var.name] = var
 
         return pairs
 
-    def validate_var_name(self, _var_name: str) -> bool:
-        return bool(match(r"^[a-zA-z_][a-zA-Z0-9_]*$", _var_name))  # I love regular expressions!!
+    def validate_var_name(self, _var_name: str) -> bool: return bool(match(r"^[a-zA-z_][a-zA-Z0-9_]*$", _var_name))  # I love regular expressions!!
 
     def clear_strios(self, *strios: StringIO) -> None:
         for strio in strios:
