@@ -22,3 +22,6 @@ class AST:
   def print_tasks(self) -> None:
     for task_name in self.TASKS:
       BuildDocDebugMessage("%s =" %task_name, [t.cmd for t in self.TASKS[task_name]], _verbose=self.FLAGS.verbose)
+
+  def print_commands(self) -> None:
+    for task in self.TASKS: [c.cmd for c in self.TASKS[task]]

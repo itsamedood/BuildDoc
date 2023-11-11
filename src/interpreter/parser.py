@@ -1,3 +1,4 @@
+from interpreter.command import Command
 from interpreter.variable import *
 from bdotenv.dotenv import DotEnv
 from interpreter.ast import AST
@@ -12,6 +13,7 @@ class Parser:
     self.FLAGS = _flags
     self.TREE = AST(_flags)
     self.line, self.char, = 1, 0
+    self.var_vals_parsed = False
 
     # Read and parse all `.env` in cwd.
     self.TREE.VARIABLES |= DotEnv().read()
@@ -19,13 +21,17 @@ class Parser:
 
   def parse_tokens(self, _tokens: list[tuple[Token, str | int | None]]) -> AST:
     # General variables.
-    task, current_task = StringIO(), ''
-    ignore, bracket_open = False, False
+    ignore = False
 
     # Variable related variables.
     reading_vars, reading_var_name = False, False
     d_quote, s_quote = False, False
     var_name, var_value = StringIO(), StringIO()
+
+    # Task and command related variables.
+    bracket_open, reading_command = False, False
+    task, current_task = StringIO(), ''
+    command = StringIO()
 
     for i, t in enumerate(_tokens):
       token, value = t
@@ -68,10 +74,21 @@ class Parser:
 
         continue
 
-      if len(current_task) > 0:
+      if len(current_task) > 0 and not bracket_open:
+        if not self.var_vals_parsed:
+          self.parse_var_values()
+          self.var_vals_parsed = True
+
         if token is Token.L_BRACKET: ...
-        elif token is Token.NEWLINE: ...
-        else: ...
+        elif token is Token.NEWLINE and len(command.getvalue().strip()) > 0:
+          cmd = command.getvalue().strip()
+
+          self.TREE.TASKS[current_task].append(Command(cmd[0]=='&', self.parse_text(cmd)))
+          clear_strios(command)
+
+        else:
+          if token is not Token.NEWLINE: command.write(str(value))
+          continue
 
       match token:
         case Token.LETTER:
@@ -179,10 +196,16 @@ class Parser:
 
       else:
         vn_val = var_name.getvalue()
-        BuildDocDebugMessage("Got: %s" %vn_val, _verbose=self.FLAGS.verbose)
+        if len(vn_val) > 0: BuildDocDebugMessage("Got: %s" %vn_val, _verbose=self.FLAGS.verbose)
 
         if vn_val in self.TREE.VARIABLES:
           _text = _text.replace('$%s' %vn_val, str(self.TREE.VARIABLES[vn_val].value))
+
+    vn_val = var_name.getvalue()
+    if len(vn_val) > 0: BuildDocDebugMessage("Got: %s" %vn_val, _verbose=self.FLAGS.verbose)
+
+    if vn_val in self.TREE.VARIABLES:
+      _text = _text.replace('$%s' %vn_val, str(self.TREE.VARIABLES[vn_val].value))
 
     BuildDocDebugMessage(_text, _verbose=self.FLAGS.verbose)
     return _text
@@ -191,7 +214,7 @@ class Parser:
     for var_name in self.TREE.VARIABLES:
       var = self.TREE.VARIABLES[var_name]
       var.value = self.parse_text(str(var.value))
-      BuildDocDebugMessage("After parse: %s" %var.value, _verbose=True)
+      BuildDocDebugMessage("After parse: %s" %var.value, _verbose=self.FLAGS.verbose)
 
   def raise_unexpected(self, _unexpected_char: str, _line: int, _char: int) -> None:
     """ Shortcut for raising a traced error for an unexpected character. """

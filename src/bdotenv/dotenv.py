@@ -41,10 +41,8 @@ class DotEnv:
 
           else:
             if ignore: continue
-            if c == '=': reading_value = True
-
+            elif c == '=': reading_value = True
             elif not reading_value: name.write(c)
-
             else: value.write(c)
 
     # Iterate over vars and parse their values.

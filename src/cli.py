@@ -21,4 +21,4 @@ class Cli:
     except IndexError: raise BuildDocError("BuildDoc not found.", 1)
 
     intrptr = Interpreter(self.FLAGS)
-    intrptr.interpret(path)
+    intrptr.interpret(path, task)
