@@ -1,10 +1,19 @@
-NAME="world"
-MESSAGE="Hello $NAME"
-SOURCE_FILES="src"
-MAIN="$SOURCE_FILES/main.py"
+# Variables for testing.
+SRC="src"
+ROOT="@ROOT_USER"
+MAIN="$SRC/main.py"
 
-[main] # Default task.
-echo "Hello $NAME!"
+# Variables for compilation and packaging.
+FLAGS="-B"
+EXPORT="export.py"
 
-[compile_program]
-cxfreeze --target-dir./bin --target-name build $MAIN
+[test]
+echo $ROOT
+
+[compile]
+&printf Compiling...\n\n
+&python3 $FLAGS $EXPORT
+
+[package]
+&printf Packaging...\n\n
+&python3 $FLAGS $EXPORT --zip

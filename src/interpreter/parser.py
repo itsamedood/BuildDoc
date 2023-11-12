@@ -81,9 +81,9 @@ class Parser:
 
         if token is Token.L_BRACKET: ...
         elif token is Token.NEWLINE and len(command.getvalue().strip()) > 0:
-          cmd = command.getvalue().strip()
+          cmd = self.parse_text(command.getvalue().strip())
 
-          self.TREE.TASKS[current_task].append(Command(cmd[0]=='&', self.parse_text(cmd)))
+          self.TREE.TASKS[current_task].append(Command(cmd[0]=='&', cmd))
           clear_strios(command)
 
         else:
@@ -172,13 +172,14 @@ class Parser:
 
     var_name = StringIO()
     reading_var, reading_env_var = False, False
+    vars_to_parse: list[str] = []
 
     for i, c in enumerate(_text):
       if c == Token.DOLLAR.value:
         reading_var = True
         continue
 
-      if c == Token.AT.value:
+      elif c == Token.AT.value:
         reading_env_var = True
         continue
 
@@ -190,22 +191,30 @@ class Parser:
         elif c.isalpha() or c == Token.UNDERSCORE.value:
           var_name.write(c)
           continue
+
+        elif c == Token.WHITESPACE.value:
+          vars_to_parse.append(var_name.getvalue())
+          clear_strios(var_name)
+          reading_var = False
+
         else:
           reading_var = False
+          vars_to_parse.append(var_name.getvalue())
+          clear_strios(var_name)
           continue
 
       else:
-        vn_val = var_name.getvalue()
-        if len(vn_val) > 0: BuildDocDebugMessage("Got: %s" %vn_val, _verbose=self.FLAGS.verbose)
+        vars_to_parse.append(var_name.getvalue())
+        clear_strios(var_name)
 
-        if vn_val in self.TREE.VARIABLES:
-          _text = _text.replace('$%s' %vn_val, str(self.TREE.VARIABLES[vn_val].value))
+    vars_to_parse.append(var_name.getvalue())
 
-    vn_val = var_name.getvalue()
-    if len(vn_val) > 0: BuildDocDebugMessage("Got: %s" %vn_val, _verbose=self.FLAGS.verbose)
+    for v in vars_to_parse:
+      if len(v) < 1: continue
+      if len(v) > 0: BuildDocDebugMessage("Got: %s" %v, _verbose=self.FLAGS.verbose)
 
-    if vn_val in self.TREE.VARIABLES:
-      _text = _text.replace('$%s' %vn_val, str(self.TREE.VARIABLES[vn_val].value))
+      if v in self.TREE.VARIABLES:
+        _text = _text.replace('$%s' %v, str(self.TREE.VARIABLES[v].value))
 
     BuildDocDebugMessage(_text, _verbose=self.FLAGS.verbose)
     return _text

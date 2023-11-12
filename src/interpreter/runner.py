@@ -14,6 +14,6 @@ class Runner:
       cmd = cmdobj.cmd
 
       if not cmdobj.silent: print(cmd)
-      retval = system(cmd)
+      retval = system(cmd[1:] if cmdobj.silent else cmd)
 
       if retval > 0: raise BuildDocError(f"command '{cmd}' exited with code {retval}.", retval)

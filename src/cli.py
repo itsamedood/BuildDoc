@@ -7,13 +7,13 @@ from out import BuildDocError
 class Cli:
   def __init__(self, argv: list[str]) -> None:
     self.FLAGS = Flags([a[1:] for a in argv if a[0] == '-' and len(a) > 1])
-    self.ARGS = [a for a in argv if not a[0] == '-']
-    self.ARGS.pop()
+    self.ARGS = [a for a in argv]
     self.CWD = getcwd()
 
   def process_args(self):
     task = None
-    if len(self.ARGS) > 0 and not self.ARGS[0][0] == '-': task = self.ARGS[0]
+    if len(self.ARGS) > 1 and not self.ARGS[-1][0] == '-': task = self.ARGS[-1]
+    print(self.ARGS)
 
     try:
       global path

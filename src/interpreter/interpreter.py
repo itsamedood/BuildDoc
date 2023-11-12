@@ -3,7 +3,6 @@ from interpreter.lexer import Lexer
 from interpreter.parser import Parser
 from interpreter.runner import Runner
 from os import getenv
-
 from out import BuildDocError
 
 
