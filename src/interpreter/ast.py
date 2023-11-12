@@ -1,7 +1,26 @@
 from interpreter.command import Command
 from interpreter.flags import Flags
 from interpreter.variable import Variable
-from out import BuildDocDebugMessage
+from out import BuildDocDebugMessage, BuildDocError
+
+
+class VariableManager:
+  reg: dict[str, Variable] = {}
+  env: dict[str, Variable] = {}
+
+  def __init__(self) -> None: ...
+
+  def get_reg(self, _var: str) -> Variable:
+    if _var not in self.reg: raise BuildDocError("%s not declared." %_var, 1)
+    return self.reg[_var]
+
+  def get_env(self, _var: str) -> Variable:
+    if _var not in self.env: raise BuildDocError("%s not declared." %_var, 1)
+    return self.env[_var]
+
+  def print_vars(self, _reg = True, _env = True):
+    if _reg: [print(f"[R] {v} = {self.reg[v].value}") for v in self.reg]
+    if _env: [print(f"[E] {v} = {self.env[v].value}") for v in self.env]
 
 
 class AST:
@@ -9,15 +28,12 @@ class AST:
   Abstract Syntax Tree. Keeps track of variables, tasks, etc.
   """
 
-  def __init__(self, _flags: Flags) -> None:
+  def __init__(self, _flags: Flags, _vm: VariableManager) -> None:
     self.FLAGS = _flags
-    self.VARIABLES: dict[str, Variable] = {}
+    self.VARIABLES = _vm
     self.TASKS: dict[str, list[Command]] = {}
 
-  def print_vars(self) -> None:
-    for var_name in self.VARIABLES:
-      var_type = self.VARIABLES[var_name].type.name[0]  # 'R' || 'E'
-      BuildDocDebugMessage(f"[{var_type}] {var_name} =", self.VARIABLES[var_name].value, _verbose=self.FLAGS.verbose)
+  def print_vars(self) -> None: return self.VARIABLES.print_vars()
 
   def print_tasks(self) -> None:
     for task_name in self.TASKS:

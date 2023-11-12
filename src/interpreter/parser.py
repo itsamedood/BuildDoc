@@ -1,7 +1,8 @@
+from curses.ascii import isalpha
 from interpreter.command import Command
 from interpreter.variable import *
 from bdotenv.dotenv import DotEnv
-from interpreter.ast import AST
+from interpreter.ast import AST, VariableManager
 from interpreter.flags import Flags
 from interpreter.tokens import Token
 from io import StringIO
@@ -9,14 +10,14 @@ from out import BuildDocDebugMessage, BuildDocTracedError, clear_strios
 
 
 class Parser:
-  def __init__(self, _flags: Flags) -> None:
+  def __init__(self, _flags: Flags, _vm: VariableManager) -> None:
     self.FLAGS = _flags
-    self.TREE = AST(_flags)
+    self.TREE = AST(_flags, _vm)
     self.line, self.char, = 1, 0
     self.var_vals_parsed = False
 
     # Read and parse all `.env` in cwd.
-    self.TREE.VARIABLES |= DotEnv().read()
+    self.TREE.VARIABLES.env |= DotEnv().read()
     # [BuildDocDebugMessage(f"(@) {v} = {self.TREE.VARIABLES[v].value} {type(self.TREE.VARIABLES[v].value)}", _verbose=self.FLAGS.verbose) for v in self.TREE.VARIABLES]
 
   def parse_tokens(self, _tokens: list[tuple[Token, str | int | None]]) -> AST:
@@ -62,12 +63,12 @@ class Parser:
 
           if not d_quote:
             BuildDocDebugMessage(f"{var_name.getvalue()} = {var_value.getvalue()}", _verbose=self.FLAGS.verbose)
-            if var_name in self.TREE.VARIABLES: raise BuildDocTracedError("var %s already declared" %var_name, 1, self.line, self.char, self.FLAGS.verbose)
+            if var_name in self.TREE.VARIABLES.reg: raise BuildDocTracedError("var %s already declared" %var_name, 1, self.line, self.char, self.FLAGS.verbose)
             else:
               vv = var_value.getvalue()
               vv = self.parse_text(vv)
 
-              self.TREE.VARIABLES[var_name.getvalue()] = Variable(var_name.getvalue(), var_value.getvalue(), VariableType.REGULAR)
+              self.TREE.VARIABLES.reg[var_name.getvalue()] = Variable(var_name.getvalue(), var_value.getvalue(), VariableType.REGULAR)
 
             clear_strios(var_name, var_value)
             reading_vars = False
@@ -172,7 +173,7 @@ class Parser:
 
     var_name = StringIO()
     reading_var, reading_env_var = False, False
-    vars_to_parse: list[str] = []
+    vars_to_parse: list[tuple[str, VariableType]] = []
 
     for i, c in enumerate(_text):
       if c == Token.DOLLAR.value:
@@ -183,45 +184,36 @@ class Parser:
         reading_env_var = True
         continue
 
-      if reading_var:
-        if i == len(_text)-1:
-          if c.isalpha() or c == Token.UNDERSCORE.value: var_name.write(c)
-          reading_var = False
+      # "Should be simple"... twas not simple... fml.
+      if reading_var or reading_env_var:
+        if i <= len(_text)-1:
+          if c.isalpha() or c == Token.UNDERSCORE.value:
+            var_name.write(c)
+            continue
 
-        elif c.isalpha() or c == Token.UNDERSCORE.value:
-          var_name.write(c)
-          continue
+          else:
+            print(var_name)
+            vars_to_parse.append((var_name.getvalue(), VariableType.REGULAR if reading_var else VariableType.ENVIRONMENT))
+            reading_var, reading_env_var = False, False
+            clear_strios(var_name)
 
-        elif c == Token.WHITESPACE.value:
-          vars_to_parse.append(var_name.getvalue())
-          clear_strios(var_name)
-          reading_var = False
+    v = var_name.getvalue()
+    vars_to_parse.append((var_name.getvalue(), VariableType.REGULAR if reading_var else VariableType.ENVIRONMENT))
 
-        else:
-          reading_var = False
-          vars_to_parse.append(var_name.getvalue())
-          clear_strios(var_name)
-          continue
-
-      else:
-        vars_to_parse.append(var_name.getvalue())
-        clear_strios(var_name)
-
-    vars_to_parse.append(var_name.getvalue())
-
-    for v in vars_to_parse:
+    for v, t in vars_to_parse:
       if len(v) < 1: continue
       if len(v) > 0: BuildDocDebugMessage("Got: %s" %v, _verbose=self.FLAGS.verbose)
 
-      if v in self.TREE.VARIABLES:
-        _text = _text.replace('$%s' %v, str(self.TREE.VARIABLES[v].value))
+      if v in self.TREE.VARIABLES.reg or v in self.TREE.VARIABLES.env:
+        if t is VariableType.REGULAR: _text = _text.replace('$%s' %v, str(self.TREE.VARIABLES.reg[v].value))
+        else: _text = _text.replace('@%s' %v, str(self.TREE.VARIABLES.env[v].value))
 
     BuildDocDebugMessage(_text, _verbose=self.FLAGS.verbose)
     return _text
 
   def parse_var_values(self) -> None:
-    for var_name in self.TREE.VARIABLES:
-      var = self.TREE.VARIABLES[var_name]
+    for var_name in self.TREE.VARIABLES.reg:
+      var = self.TREE.VARIABLES.reg[var_name]
       var.value = self.parse_text(str(var.value))
       BuildDocDebugMessage("After parse: %s" %var.value, _verbose=self.FLAGS.verbose)
 

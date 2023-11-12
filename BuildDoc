@@ -1,6 +1,7 @@
 # Variables for testing.
 SRC="src"
 ROOT="@ROOT_USER"
+PORT="@PORT"
 MAIN="$SRC/main.py"
 
 # Variables for compilation and packaging.
@@ -8,7 +9,11 @@ FLAGS="-B"
 EXPORT="export.py"
 
 [test]
-echo $ROOT
+echo $PORT $ROOT
+echo @PERSON1
+&echo $MAIN
+&echo @DEC
+
 
 [compile]
 &printf Compiling...\n\n

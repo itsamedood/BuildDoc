@@ -1,3 +1,4 @@
+from interpreter.ast import VariableManager
 from interpreter.flags import Flags
 from interpreter.lexer import Lexer
 from interpreter.parser import Parser
@@ -11,7 +12,7 @@ class Interpreter:
     self.PWD = getenv("PWD")
     self.FLAGS = _flags
     self.lexer = Lexer(_flags)
-    self.parser = Parser(_flags)
+    self.parser = Parser(_flags, VariableManager())
     self.runner = Runner(_flags)
 
   def interpret(self, _path: str, _task: str | None):
