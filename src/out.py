@@ -133,8 +133,10 @@ class BuildDocDebugMessage:
 
   def __init__(self, *_values: Any, _verbose: bool = False) -> None:
     if _verbose:
+      # Gets the file name so we know where this debug message is called from, so unbelievably helpful.
       caller = getouterframes(currentframe(), 2)[1]
       filename = caller.filename.split('\\')[-1].split('/')[-1]
 
+      # Display debug message with file name & line number, then all the values ended with a newline.
       print(f"builddoc: {Ansi.style.BOLD}{Ansi.text.YELLOW}{Ansi.bg.YELLOW}debug{Ansi.special.RESET} @{filename}:{caller.lineno}:", end=' ')
       [print(v, end='\n') if i == len(_values)-1 else print(v, end=' ') for i, v in enumerate(_values)]

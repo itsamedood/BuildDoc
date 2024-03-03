@@ -13,7 +13,6 @@ class Cli:
   def process_args(self):
     task = None
     if len(self.ARGS) > 1 and not self.ARGS[-1][0] == '-': task = self.ARGS[-1]
-    print(self.ARGS)
 
     try:
       global path

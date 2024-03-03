@@ -3,6 +3,8 @@ SRC="src"
 ROOT="@ROOT_USER"
 PORT="@PORT"
 MAIN="$SRC/main.py"
+OS="?{uname -s | tr A-Z a-z}"
+OS_STATEMENT="I use ?{uname -s | tr A-Z a-z} because $OS is cool!"
 
 # Variables for compilation and packaging.
 FLAGS="-B"
@@ -16,9 +18,11 @@ echo @PERSON1
 
 
 [compile]
-&printf Compiling...\n\n
+# Gotta fix single `\` being an issue, just gotta add another one if one is read by this point in the script.
+# For now, I'll just add the second one myself ¯\_(ツ)_/¯
+&printf Compiling...\\n\\n
 &python3 $FLAGS $EXPORT
 
 [package]
-&printf Packaging...\n\n
+&printf Packaging...\\n\\n
 &python3 $FLAGS $EXPORT --zip

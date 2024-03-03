@@ -6,6 +6,7 @@ from interpreter.ast import AST, VariableManager
 from interpreter.flags import Flags
 from interpreter.tokens import Token
 from io import StringIO
+from os import popen
 from out import BuildDocDebugMessage, BuildDocTracedError, clear_strios
 
 
@@ -34,7 +35,9 @@ class Parser:
     task, current_task = StringIO(), ''
     command = StringIO()
 
-    for i, t in enumerate(_tokens):
+    # `i` is currently unused, so unless I actually need to use it, there's no need to enumerate.
+    # for i, t in enumerate(_tokens):
+    for t in _tokens:
       token, value = t
       self.char += 1
 
@@ -68,7 +71,7 @@ class Parser:
               vv = var_value.getvalue()
               vv = self.parse_text(vv)
 
-              self.TREE.VARIABLES.reg[var_name.getvalue()] = Variable(var_name.getvalue(), var_value.getvalue(), VariableType.REGULAR)
+              self.TREE.VARIABLES.reg[var_name.getvalue()] = (Variable(var_name.getvalue(), var_value.getvalue(), VariableType.REGULAR), self.line)
 
             clear_strios(var_name, var_value)
             reading_vars = False
@@ -171,8 +174,9 @@ class Parser:
   def parse_text(self, _text: str) -> str:
     """ Replaces variables of all types in `_text`. """
 
-    var_name = StringIO()
+    var_name, command = StringIO(), StringIO()
     reading_var, reading_env_var = False, False
+    qmark, reading_command = False, False
     vars_to_parse: list[tuple[str, VariableType]] = []
 
     for i, c in enumerate(_text):
@@ -184,6 +188,34 @@ class Parser:
         reading_env_var = True
         continue
 
+      elif c == Token.QUESTION_MARK.value:
+        qmark = True
+        continue
+
+      if qmark:
+        if c == Token.L_BRACE.value:
+          reading_command, qmark = True, False
+          continue
+
+        else: qmark = False
+        continue
+
+      if reading_command:
+        BuildDocDebugMessage("COMMAND CHAR: %s" %c, _verbose=self.FLAGS.verbose)
+
+        if c == Token.R_BRACE.value:
+          cmd = command.getvalue()
+          BuildDocDebugMessage("COMMAND GOTTEN: %s" %cmd, _verbose=self.FLAGS.verbose)
+
+          value = popen(cmd.strip()).read().strip()
+          BuildDocDebugMessage("COMMAND VALUE: %s" %value, _verbose=self.FLAGS.verbose)
+
+          clear_strios(command)
+          reading_command = False
+
+        else: command.write(c)
+        continue
+
       # "Should be simple"... twas not simple... fml.
       if reading_var or reading_env_var:
         if i <= len(_text)-1:
@@ -192,7 +224,7 @@ class Parser:
             continue
 
           else:
-            print(var_name)
+            # print(var_name)
             vars_to_parse.append((var_name.getvalue(), VariableType.REGULAR if reading_var else VariableType.ENVIRONMENT))
             reading_var, reading_env_var = False, False
             clear_strios(var_name)
@@ -205,16 +237,60 @@ class Parser:
       if len(v) > 0: BuildDocDebugMessage("Got: %s" %v, _verbose=self.FLAGS.verbose)
 
       if v in self.TREE.VARIABLES.reg or v in self.TREE.VARIABLES.env:
-        if t is VariableType.REGULAR: _text = _text.replace('$%s' %v, str(self.TREE.VARIABLES.reg[v].value))
-        else: _text = _text.replace('@%s' %v, str(self.TREE.VARIABLES.env[v].value))
+        if t is VariableType.REGULAR:
+          var, line = self.TREE.VARIABLES.reg[v]
+          _text = _text.replace('$%s' %v, str(var.value))
+
+        else:
+          var = self.TREE.VARIABLES.env[v]
+          _text = _text.replace('@%s' %v, str(var.value))
 
     BuildDocDebugMessage(_text, _verbose=self.FLAGS.verbose)
     return _text
 
+  def parse_shell_vars(self, _text: str, _line: int) -> str:
+    """ Parses all shell variables (`?{...}`) in `_text`. """
+    command = StringIO()
+    qmark, reading_command = False, False
+    # Just playing with lambda expressions for the first time ¯\_(ツ)_/¯
+    cmdresult = lambda cmd : popen(cmd).read().strip() if type(cmd) == str else ''
+    # This is how I would annotate a type in a lambda expression since you can't really.
+
+    for c in _text:
+      if c == Token.QUESTION_MARK.value:
+        qmark = True
+        continue
+
+      if qmark:
+        if c == Token.L_BRACE.value:
+          reading_command, qmark = True, False
+          continue
+
+        else: qmark = False
+        continue
+
+      if reading_command:
+        if c == Token.R_BRACE.value:
+          cmd = command.getvalue().strip()
+          value = cmdresult(cmd)  # Run command, take result, strip it, assign it.
+          BuildDocDebugMessage("COMMAND GOTTEN: %s" %cmd, _verbose=self.FLAGS.verbose)
+          BuildDocDebugMessage("COMMAND VALUE: %s" %value, _verbose=self.FLAGS.verbose)
+
+          # print("?{%s}" %cmd, value, _text.replace("?{%s}" %cmd, value))
+          _text = _text.replace("?{%s}" %cmd, value)
+          clear_strios(command)
+          reading_command = False
+
+        else: command.write(c)
+
+    if reading_command: raise BuildDocTracedError("unclosed {", 1, _line, len(_text), self.FLAGS.verbose)
+    BuildDocDebugMessage("After shell parse: %s" %_text, _verbose=self.FLAGS.verbose)
+    return _text
+
   def parse_var_values(self) -> None:
     for var_name in self.TREE.VARIABLES.reg:
-      var = self.TREE.VARIABLES.reg[var_name]
-      var.value = self.parse_text(str(var.value))
+      var, line = self.TREE.VARIABLES.reg[var_name]
+      var.value = self.parse_shell_vars(self.parse_text(str(var.value)), line)
       BuildDocDebugMessage("After parse: %s" %var.value, _verbose=self.FLAGS.verbose)
 
   def raise_unexpected(self, _unexpected_char: str, _line: int, _char: int) -> None:

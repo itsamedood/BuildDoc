@@ -19,6 +19,7 @@ class Interpreter:
     with open(_path, 'r') as builddoc:
       code = builddoc.read()
       self.TREE = self.parser.parse_tokens(self.lexer.tokenize(code))
+
       if self.FLAGS.verbose:
         self.TREE.print_vars()
         self.TREE.print_tasks()
