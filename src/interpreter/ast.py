@@ -41,8 +41,8 @@ class AST:
   def print_vars(self) -> None: return self.VARIABLES.print_vars()
 
   def print_tasks(self) -> None:
-    for task_name in self.TASKS:
-      BuildDocDebugMessage("%s =" %task_name, [t.cmd for t in self.TASKS[task_name]], _verbose=self.FLAGS.verbose)
+    [BuildDocDebugMessage("%s =" %task_name, [t.cmd for t in self.TASKS[task_name]], _verbose=self.FLAGS.verbose) for task_name in self.TASKS]
 
   def print_commands(self) -> None:
-    for task in self.TASKS: [c.cmd for c in self.TASKS[task]]
+    # Condensed with list comprehension (I was bored..)
+    [[BuildDocDebugMessage(c.cmd, _verbose=self.FLAGS.verbose) for c in self.TASKS[task]] for task in self.TASKS]

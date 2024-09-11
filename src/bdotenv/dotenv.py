@@ -17,6 +17,10 @@ class DotEnv:
     line, char = 1, 0
     ignore, reading_value = False, False
 
+    if not len(dotenv_files) > 0:
+      print("No '.env' found.")
+      return {}
+
     for dotenv_file in dotenv_files:
       with open(dotenv_file.path, 'r') as dotenv:
         lines = dotenv.read()
@@ -99,9 +103,11 @@ class DotEnv:
       var.value = value
       pairs[var.name] = var
 
+    print("Read '.env'.")
     return pairs
 
-  def validate_var_name(self, _var_name: str) -> bool: return bool(match(r"^[a-zA-z_][a-zA-Z0-9_]*$", _var_name))  # I love regular expressions!!
+  # I love regex!!
+  def validate_var_name(self, _var_name: str) -> bool: return bool(match(r"^[a-zA-z_][a-zA-Z0-9_]*$", _var_name))
 
   def clear_strios(self, *strios: StringIO) -> None:
     for strio in strios:

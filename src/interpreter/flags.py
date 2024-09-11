@@ -50,7 +50,9 @@ class Flags:
           with open("%s/BuildDoc" %self._PWD, 'x') as builddoc:
             TEMPLATE = [
               "# Variables go here.\n",
-              "[main] # Main task, run by default.",
+              "# `build` run the first task in the script by default (`run` in this case)."
+              "# To specify a task to run, run `build <task>`.",
+              "[run]",
               "echo \":)\""
             ]
 
@@ -59,3 +61,6 @@ class Flags:
 
           BuildDocSuccess("created %s/BuildDoc!" %self._PWD)
           exit(0)
+
+        case badflag:
+          BuildDocError("BuildDoc flags use 1 `-`!" if badflag[0] == '-' else "%s isn't a flag; run `build -help` for valid flags." %badflag, 1)

@@ -1,4 +1,3 @@
-from curses.ascii import isalpha
 from interpreter.command import Command
 from interpreter.variable import *
 from bdotenv.dotenv import DotEnv
@@ -8,6 +7,7 @@ from interpreter.tokens import Token
 from io import StringIO
 from os import popen
 from out import BuildDocDebugMessage, BuildDocTracedError, clear_strios
+from re import match
 
 
 class Parser:
@@ -31,7 +31,7 @@ class Parser:
     var_name, var_value = StringIO(), StringIO()
 
     # Task and command related variables.
-    bracket_open, reading_command = False, False
+    bracket_open = False  # `reading_command` is unused (may need in the future?)
     task, current_task = StringIO(), ''
     command = StringIO()
 
@@ -85,7 +85,7 @@ class Parser:
 
         if token is Token.L_BRACKET: ...
         elif token is Token.NEWLINE and len(command.getvalue().strip()) > 0:
-          cmd = self.parse_text(command.getvalue().strip())
+          cmd = self.parse_text(command.getvalue().strip()).replace('\\', "\\\\")
 
           self.TREE.TASKS[current_task].append(Command(cmd[0]=='&', cmd))
           clear_strios(command)
@@ -219,7 +219,7 @@ class Parser:
       # "Should be simple"... twas not simple... fml.
       if reading_var or reading_env_var:
         if i <= len(_text)-1:
-          if c.isalpha() or c == Token.UNDERSCORE.value:
+          if match(r"[a-zA-Z0-9]|_", c):
             var_name.write(c)
             continue
 
@@ -272,7 +272,7 @@ class Parser:
       if reading_command:
         if c == Token.R_BRACE.value:
           cmd = command.getvalue().strip()
-          value = cmdresult(cmd)  # Run command, take result, strip it, assign it.
+          value = cmdresult(cmd.replace('\\', "\\\\"))  # Run command, take result, strip it, assign it.
           BuildDocDebugMessage("COMMAND GOTTEN: %s" %cmd, _verbose=self.FLAGS.verbose)
           BuildDocDebugMessage("COMMAND VALUE: %s" %value, _verbose=self.FLAGS.verbose)
 
