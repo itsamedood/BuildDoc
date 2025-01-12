@@ -5,6 +5,8 @@ from out import BuildDocError
 
 
 class Cli:
+  """ Handles the command-line side of things. """
+
   def __init__(self, argv: list[str]) -> None:
     self.FLAGS = Flags([a[1:] for a in argv if a[0] == '-' and len(a) > 1])
     self.ARGS = [a for a in argv]

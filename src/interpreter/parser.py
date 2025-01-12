@@ -1,6 +1,7 @@
-from interpreter.command import Command
-from interpreter.variable import *
 from bdotenv.dotenv import DotEnv
+from interpreter.command import Command
+from interpreter.evaluator import Evaluator
+from interpreter.variable import *
 from interpreter.ast import AST, VariableManager
 from interpreter.flags import Flags
 from interpreter.tokens import Token
@@ -11,9 +12,12 @@ from re import match
 
 
 class Parser:
-  def __init__(self, _flags: Flags, _vm: VariableManager) -> None:
+  """ Contains functions for parsing BuildDoc code. """
+
+  def __init__(self, _flags: Flags, _vm: VariableManager, _ev: Evaluator) -> None:
     self.FLAGS = _flags
     self.TREE = AST(_flags, _vm)
+    self.evaluator = _ev
     self.line, self.char, = 1, 0
     self.var_vals_parsed = False
 
@@ -85,10 +89,13 @@ class Parser:
 
         if token is Token.L_BRACKET: ...
         elif token is Token.NEWLINE and len(command.getvalue().strip()) > 0:
-          cmd = self.parse_text(command.getvalue().strip()).replace('\\', "\\\\")
+          cmd = self.parse_text(command.getvalue().strip())
+          # print('cmd is not None', cmd is not None)
+          if cmd is not None:
+            cmd = cmd.replace('\\', "\\\\")
 
-          self.TREE.TASKS[current_task].append(Command(cmd[0]=='&', cmd))
-          clear_strios(command)
+            self.TREE.TASKS[current_task].append(Command(cmd[0]=='&', cmd))
+            clear_strios(command)
 
         else:
           if token is not Token.NEWLINE: command.write(str(value))
@@ -174,9 +181,11 @@ class Parser:
   def parse_text(self, _text: str) -> str:
     """ Replaces variables of all types in `_text`. """
 
-    var_name, command = StringIO(), StringIO()
+    var_name, command, condition = StringIO(), StringIO(), StringIO()
     reading_var, reading_env_var = False, False
     qmark, reading_command = False, False
+    reading_condition = False
+    l_parens, r_parens = 0, 0
     vars_to_parse: list[tuple[str, VariableType]] = []
 
     for i, c in enumerate(_text):
@@ -245,6 +254,64 @@ class Parser:
           var = self.TREE.VARIABLES.env[v]
           _text = _text.replace('@%s' %v, str(var.value))
 
+    # If the condition relies on a variable for comparison, it'll be parsed now.
+    if _text[:2] == 'if':
+      BuildDocDebugMessage("READING LOGIC", _verbose=self.FLAGS.verbose)
+
+      # Round 2.
+      for i, c in enumerate(_text[2:]):  # We can skip the first 2 chars since we know it's just 'i' & 'f'
+        # BuildDocDebugMessage("CONDITION CHAR READ = %s" %c, _verbose=self.FLAGS.verbose)
+
+        match c:
+          # case Token.WHITESPACE.value | Token.TAB.value: continue
+
+          case Token.L_PAREN.value:
+            reading_condition = True
+            l_parens += 1
+            continue
+
+          case Token.R_PAREN.value:
+            if not l_parens - 2 == r_parens: reading_condition = False
+
+            r_parens += 1
+            continue
+
+        if reading_condition:
+          # print("cond char = %s" %c)
+
+          # if match(r'[a-zA-Z0-9]', c) or c in '\'"!><|&=': condition.write(c)
+          # else: self.raise_unexpected(c, self.line, self.char)
+
+          if c == '(': l_parens += 1
+          if c == ')': r_parens += 1
+
+          condition.write(c)
+        else: continue
+
+      if not l_parens == r_parens:
+        raise BuildDocTracedError("Unclosed '('", 1, self.line, self.char, self.FLAGS.verbose)
+
+      if len(cond:=condition.getvalue()) > 0:
+        BuildDocDebugMessage("Condition: %s" %(scond:=cond.strip()), _verbose=self.FLAGS.verbose)
+
+        if match(r"", scond):
+          # result = str(eval(cond))
+          result = self.evaluator.evaluate(cond) # NEVER use eval().
+        else:
+          raise BuildDocTracedError("Bad condition (%s)" %cond, 1, self.line, self.char, self.FLAGS.verbose)
+
+        # lmao shit attempt at preventing ACE 👇
+        # if not (result == "True" or result == "False"): raise BuildDocError("Stop trying to exploit eval", 1)
+        print("EVAL SAYS: %s" %result)
+
+        self.run = bool(result)
+
+      elif l_parens == r_parens == 1:
+        raise BuildDocTracedError("missing condition", 1, self.line, self.char, self.FLAGS.verbose)
+
+    elif _text == 'endif':
+      self.run = True
+
     BuildDocDebugMessage(_text, _verbose=self.FLAGS.verbose)
     return _text
 
@@ -290,9 +357,10 @@ class Parser:
   def parse_var_values(self) -> None:
     for var_name in self.TREE.VARIABLES.reg:
       var, line = self.TREE.VARIABLES.reg[var_name]
-      var.value = self.parse_shell_vars(self.parse_text(str(var.value)), line)
+      var.value = self.parse_shell_vars(self.parse_text(str(var.value)) or '', line)
       BuildDocDebugMessage("After parse: %s" %var.value, _verbose=self.FLAGS.verbose)
 
   def raise_unexpected(self, _unexpected_char: str, _line: int, _char: int) -> None:
     """ Shortcut for raising a traced error for an unexpected character. """
+
     raise BuildDocTracedError("unexpected %s" %_unexpected_char, 1, _line, _char, self.FLAGS.verbose)

@@ -4,7 +4,7 @@ from sys import exit
 from typing import Any
 
 
-BUILDDOC_VERSION = "0.0.0"
+BUILDDOC_VERSION = "0.0.0"  # Probably should learn versioning at some point lol
 
 
 # ANSI classes.
@@ -49,6 +49,7 @@ class Special:
 
 class Ansi:
   """ Class for using ANSI color codes. """
+
   style   = TextStyle()
   text  = TextColor()
   bg    = BGColor()
@@ -58,6 +59,7 @@ class Ansi:
   @staticmethod
   def new(_style: int, _text_color: int, _bg_color: int) -> str:
     """ Creates a new ANSI color code. If the numbers are not valid, the effect is not produced. """
+
     if _text_color and _bg_color == 0: return "\033[%sm" %_style
     return f"\033[{_style};{_bg_color}m" if _text_color == 0 else f"\033[{_style};{_text_color}m"
 
@@ -77,6 +79,7 @@ def clear_strios(*_strs: StringIO) -> None:
 # Error classes.
 class BuildDocError(BaseException):
   """ Base class for all BuildDoc errors. """
+
   def __init__(self, _message: str, _code: int) -> None:
     print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: {_message}")
     exit(_code)
@@ -96,17 +99,6 @@ class BuildDocTracedError(BuildDocError):
     exit(_code)
 
 
-# class BuildDocMacroError(BuildDocError):
-#   def __init__(self, _macro_name: str, _message: str, _code: int) -> None:
-#     print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{_macro_name}{Ansi.special.RESET}): {_message}.")
-#     exit(_code)
-
-# class BuildDocMacroArgumentError(BuildDocMacroError):
-#   def __init__(self, _macro_name: str, _expected: int, _got: int, _code: int) -> None:
-#     print(f"builddoc: {Ansi.special.ERROR}error{Ansi.special.RESET}: ({Ansi.style.LIGHT}%{_macro_name}{Ansi.special.RESET}): expected {_expected} argument(s); got {_got}.")
-#     exit(_code)
-
-
 class BuildDocWarning:
   """ Represents a warning in BuildDoc. """
   def __init__(self, _message: str) -> None: print(f"builddoc: {Ansi.special.WARNING}warning{Ansi.special.RESET}: {_message}")
@@ -123,6 +115,8 @@ class BuildDocNote:
 
 
 class BuildDocSuccess:
+  """ A message from the interpreter when something succeeds. """
+
   def __init__(self, _message: str) -> None:
     print(f"builddoc: {Ansi.special.SUCCESS}success{Ansi.special.RESET}: {_message}")
     exit(0)

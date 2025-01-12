@@ -17,31 +17,34 @@ echo @PERSON1
 &printf "@DEC\n"
 &echo @ROOT_USER
 
+# &printf "Compiling...\n\n"
+# &python3 $FLAGS $EXPORT
 
-[conditions]
-if (10 > 5)
+
+[cond]
+if (@PORT == 66)
 &echo "math is mathing"
 endif
 
-if ($PORT == 69)
-&echo "heh"
-&echo "nice."
+# if ($PORT == 69)
+# &echo "heh"
+# &echo "nice."
+#
+# &printf "69\n"
+# endif
 
-&printf "69\n"
-endif
+# if ($OS != "darwin")
+# &printf "you suck\n"
+# else
+# &printf "man of culture, i see\n"
+# endif
 
-if ($OS != "darwin")
-&printf "you suck\n"
-else
-&printf "man of culture, i see\n"
-endif
-
-if ($SRC == "source")
-&echo "why are you like this?"
-elif ($SRC == "src")
-&echo "good, all is as it should be."
-else
-&echo "you're a monster."
+# if ($SRC == "source")
+# &echo "why are you like this?"
+# elif ($SRC == "src")
+# &echo "good, all is as it should be."
+# else
+# &echo "you're a monster."
 
 
 [compile]

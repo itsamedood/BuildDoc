@@ -5,6 +5,11 @@ from out import BuildDocDebugMessage, BuildDocError
 
 
 class VariableManager:
+  """
+  Holds all variables for BuildDoc,
+  including ones from a `.env` and ones declared in the script.
+  """
+
   reg: dict[str, tuple[Variable, int]] = {}
   env: dict[str, Variable] = {}
 

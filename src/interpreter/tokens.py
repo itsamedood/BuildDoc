@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class Token(Enum):
+  """ Represents any character useful in BuildDoc. """
+
   LETTER = ''
   NUMBER = ''
 
