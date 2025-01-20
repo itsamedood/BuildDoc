@@ -4,7 +4,7 @@ from sys import exit
 from typing import Any
 
 
-BUILDDOC_VERSION = "0.0.0"  # Probably should learn versioning at some point lol
+BUILDDOC_VERSION = "0.0.1a"  # Probably should learn versioning at some point lol
 
 
 # ANSI classes.

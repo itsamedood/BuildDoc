@@ -1,7 +1,5 @@
 from interpreter.flags import Flags
-from interpreter.tokens import Token
 from out import BuildDocDebugMessage
-from re import findall
 
 
 class Evaluator:
@@ -16,6 +14,7 @@ class Evaluator:
     BuildDocDebugMessage("READING IF STATEMENT", _verbose=self.FLAGS.verbose)
 
     operations = []
+    l_parens, r_parens, s_quotes, d_quotes = 0, 0, 0, 0
     result = False
 
     # I'm gonna be here for a while...

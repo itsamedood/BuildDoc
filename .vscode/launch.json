@@ -1,19 +1,16 @@
 {
-	"configurations": [
-		{
-			/* DEBUG */
-			"name": "Debug",
-			"type": "python",
-			"request": "launch",
-			"program": "src/main.py",
-			"args": [
-				"-vb" // For debugging purposes.
-			],
-			"pythonArgs": [
-				"-B",
-			],
-			"console": "internalConsole",
-			"justMyCode": true
-		}
-	]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug src/main.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/main.py",
+      "pythonArgs": [
+        "-B",
+      ],
+      "console": "internalConsole",
+      "args": ["${command:pickArgs}"]
+    }
+  ]
 }

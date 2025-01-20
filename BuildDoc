@@ -26,6 +26,16 @@ if (@PORT == 66)
 &echo "math is mathing"
 endif
 
+[ace]
+# ~< = Eval Fang; a way to call `eval()`.
+# ~^ = Exec Fang; a way to call `exec()`, and can let you mess with the interpreter just a little bit ;)
+# Yes these both lead to ACE, however you have to go out of your way to do it, in your own build file,
+# and on a large scale project, something so malicious would stick out like a sore thumb.
+# plus thanks to my garbage code, it's a bit of a pain in the ass to structure something in a way the
+# interpreter won't interfere with. So from my testing, any usage of [] is out of the question.
+~< __import__("os").system("echo ACE POG")
+~^ v,l=self.VM.reg.get('SRC'); v.value='sRc'; print(v.value)
+
 # if ($PORT == 69)
 # &echo "heh"
 # &echo "nice."

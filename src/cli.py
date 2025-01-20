@@ -8,13 +8,13 @@ class Cli:
   """ Handles the command-line side of things. """
 
   def __init__(self, argv: list[str]) -> None:
-    self.FLAGS = Flags([a[1:] for a in argv if a[0] == '-' and len(a) > 1])
+    self.FLAGS = Flags([a[1:] for a in argv if len(a) > 1 and a[0] == '-'])
     self.ARGS = [a for a in argv]
     self.CWD = getcwd()
 
   def process_args(self):
     task = None
-    if len(self.ARGS) > 1 and not self.ARGS[-1][0] == '-': task = self.ARGS[-1]
+    if len(self.ARGS) > 1 and (len(self.ARGS[-1]) > 0 and not self.ARGS[-1][0] == '-'): task = self.ARGS[-1]
 
     try:
       global path

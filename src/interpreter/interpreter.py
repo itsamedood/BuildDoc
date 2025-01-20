@@ -16,7 +16,7 @@ class Interpreter:
     self.FLAGS = _flags
     self.lexer = Lexer(_flags)
     self.parser = Parser(_flags, VariableManager(), evaluator:=Evaluator(_flags))
-    self.runner = Runner(_flags)
+    # self.runner = Runner(_flags)
     self.evaluator = evaluator
 
   def interpret(self, _path: str, _task: str | None):
@@ -32,4 +32,5 @@ class Interpreter:
         self.TREE.print_tasks()
         self.TREE.print_commands()
 
+      self.runner = Runner(self.FLAGS, self.TREE)
       self.runner.run_task(_task, self.TREE.TASKS[_task])

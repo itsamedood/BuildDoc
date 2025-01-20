@@ -4,6 +4,8 @@ from io import StringIO
 from re import match
 from os import getcwd, scandir
 
+from out import BuildDocDebugMessage
+
 
 class DotEnv:
   def read(self) -> dict[str, Variable]:
@@ -17,9 +19,7 @@ class DotEnv:
     line, char = 1, 0
     ignore, reading_value = False, False
 
-    if not len(dotenv_files) > 0:
-      print("No '.env' found.")
-      return {}
+    if not len(dotenv_files) > 0: return {}
 
     for dotenv_file in dotenv_files:
       with open(dotenv_file.path, 'r') as dotenv:
@@ -103,7 +103,6 @@ class DotEnv:
       var.value = value
       pairs[var.name] = var
 
-    print("Read '.env'.")
     return pairs
 
   # I love regex!!

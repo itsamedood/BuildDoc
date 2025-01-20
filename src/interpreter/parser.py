@@ -25,6 +25,8 @@ class Parser:
     self.TREE.VARIABLES.env |= DotEnv().read()
     # [BuildDocDebugMessage(f"(@) {v} = {self.TREE.VARIABLES[v].value} {type(self.TREE.VARIABLES[v].value)}", _verbose=self.FLAGS.verbose) for v in self.TREE.VARIABLES]
 
+  # I'm planning to refactor this god-awful code AFTER the first stable release.
+  # It's gonna suck but this code is horrendous.
   def parse_tokens(self, _tokens: list[tuple[Token, str | int | None]]) -> AST:
     # General variables.
     ignore = False
@@ -156,6 +158,8 @@ class Parser:
         case Token.SEMICOLON: ...
         case Token.CAROT: ...
         case Token.ASTERISK: ...
+
+        # I would literally LOVE to know why in the world this case doesn't trigger when `~` is read.
         case Token.TILDE: ...
         case Token.FORWARD_SLASH: ...
         case Token.BACKWARD_SLASH: ...
@@ -294,15 +298,11 @@ class Parser:
       if len(cond:=condition.getvalue()) > 0:
         BuildDocDebugMessage("Condition: %s" %(scond:=cond.strip()), _verbose=self.FLAGS.verbose)
 
-        if match(r"", scond):
-          # result = str(eval(cond))
-          result = self.evaluator.evaluate(cond) # NEVER use eval().
-        else:
-          raise BuildDocTracedError("Bad condition (%s)" %cond, 1, self.line, self.char, self.FLAGS.verbose)
+        result = self.evaluator.evaluate(cond)  # NEVER use eval().
 
         # lmao shit attempt at preventing ACE 👇
         # if not (result == "True" or result == "False"): raise BuildDocError("Stop trying to exploit eval", 1)
-        print("EVAL SAYS: %s" %result)
+        BuildDocDebugMessage("EVALUATOR SAYS: %s" %result, _verbose=self.FLAGS.verbose)
 
         self.run = bool(result)
 
