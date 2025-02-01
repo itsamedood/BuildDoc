@@ -15,8 +15,8 @@
 
 
 # What is BuildDoc?
-> A build tool for automatically running, compiling, and managing projects.
-
+> ### A build tool for automatically running, compiling, and managing projects.
+>
 > Example:
 > ```ini
 > CC="gcc"
@@ -30,3 +30,8 @@
 > $TARGET
 > &echo "Done!"
 > ```
+---
+# Branches
+- `main` (most up to date)
+- `og` (horrible please don't read)
+- `cmigrate` (C rewrite because it's faster and i need to learn C at some point)
