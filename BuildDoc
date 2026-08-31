@@ -1,1 +1,7 @@
-# What? It's a comment? Oh...
+# Created using `build -init`!
+
+MAIN="src/main.py"
+PYFLAGS="-B"
+
+[run]
+python3 $PYFLAGS $MAIN

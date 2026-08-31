@@ -1,11 +1,12 @@
-from enum import Enum
-from platform import system
+from out import BuildDocError, BuildDocSuccess
+from pathlib import Path
+from sys import argv
 
 
-class OS(Enum):
-  WINDOWS = "Windows"
-  MACOS   = "Darwin"
-  LINUX   = "Linux"
+# class OS(Enum):
+#   WINDOWS = "Windows"
+#   MACOS   = "Darwin"
+#   LINUX   = "Linux"
 
 
 class Flags:
@@ -20,7 +21,7 @@ class Flags:
   groupings: list[tuple[tuple[str, str | None], str, tuple[int, int]]] = [
     (("help", 'h'), "Displays this menu.", (4, 4)),
     (("verbose", 'v'), "Prints debug stuff.", (1, 4)),
-    (("init", 'i'), "Creates a BuildDoc template.", (4, 4)),
+    (("init", None), "Creates a BuildDoc template.", (4, 11)),
     (("version", None), "Displays installed version.", (1, 8))
   ]
 
@@ -30,30 +31,46 @@ class Flags:
     # ...
   }
 
-  def __init__(self, argv: list[str]) -> None:
-    self.task = last if (last:=argv[-1])[0] != '-' else None  # hehe pp operator.
+  @staticmethod
+  def init() -> None:
+    """ Initializes the class itself, because it's static. """
+
+    Flags.task = last if (last:=argv[-1])[0] != '-' else None  # hehe pp operator.
 
     for oarg in argv:
       if not oarg[0] == '-': continue
       arg = oarg[1:]
 
       if arg == 'help' or arg == 'h':
-        self.show_help()
+        Flags.show_help()
+        exit(0)
+
+      if arg == 'init':
+        if ((fullpath:=Path().cwd()/"BuildDoc").exists()): raise BuildDocError("`%s` already exists." %fullpath, 1)
+
+        fullpath.touch()
+        with open(fullpath, 'w') as initdfile:
+          initdfile.write("# Created using `build -init`!\n\nMAIN=\"src/main.py\"\nPYFLAGS=\"-B\"\n\n[run]\npython3 $PYFLAGS $MAIN")
+
+        BuildDocSuccess("Created `%s`!" %fullpath)
         exit(0)
 
       if arg == 'version':
-        print("BuildDoc - itsamedood | v%s" %self.BUILDDOC_VERSION)
+        print("BuildDoc - itsamedood | v%s" %Flags.BUILDDOC_VERSION)
         exit(0)
 
-      ...  # Update givens dict.
 
-    try: self.os = OS(system())
-    except ValueError: raise
+      # Really didn't wanna do a nested loop but oh well.
+      for group in Flags.groupings:
+        name, shorthand = group[0]
+        if arg == name or arg == shorthand: Flags.givens[name] = True
+    ...
 
-  def show_help(self) -> None:
-    print(self.USAGE, "Flags:", sep='\n')
+  @staticmethod
+  def show_help() -> None:
+    print(Flags.USAGE, "Flags:", sep='\n')
 
-    for group in self.groupings:
+    for group in Flags.groupings:
       name, shorthand = group[0]
       desc = group[1]
       firstspaces, secondspaces = group[2]

@@ -45,6 +45,11 @@ class BuildDocWarning:
 # class BuildDocTracedWarning: ...
 
 
+class BuildDocSuccess:
+  """ Lil' success message. """
+  def __init__(self, message: str) -> None: print(f"builddoc: {Ansi.preset.SUCCESS}success{Ansi.preset.RESET}: {message}")
+
+
 class BuildDocDebugMessage:
   """ A message from the interpreter that stands out more. """
 
