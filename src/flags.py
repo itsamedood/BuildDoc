@@ -21,6 +21,7 @@ class Flags:
   groupings: list[tuple[tuple[str, str | None], str, tuple[int, int]]] = [
     (("help", 'h'), "Displays this menu.", (4, 4)),
     (("verbose", 'v'), "Prints debug stuff.", (1, 4)),
+    (("log", 'l'), "Log everything to a log file for debugging.", (5, 4)),
     (("init", None), "Creates a BuildDoc template.", (4, 11)),
     (("version", None), "Displays installed version.", (1, 8))
   ]

@@ -1,11 +1,35 @@
 from ansi import Ansi
 from inspect import currentframe, getouterframes
+from pathlib import Path
 from sys import exit
 from typing import Any
 
 
 parse_filename = lambda name: name.split('\\')[-1].split('/')[-1]  # `name` should be `str`.
 clear_strios = lambda *strios: [sio.seek(0) or sio.truncate(0) for sio in strios]  # `strios` should be `StringIO`.
+
+
+class Logger:
+  """
+  Handles logging debug stuff to `builddoc.log`.
+  """
+
+  path = Path.cwd() / "builddoc.log"
+
+  @staticmethod
+  def create_log() -> None: return Logger.path.touch(exist_ok=True)
+
+  @staticmethod
+  def check_for_log() -> bool: return Logger.path.exists()
+
+  @staticmethod
+  def write_to_log() -> None:
+    Logger.create_log()
+
+
+  # @staticmethod
+  # def check_for_log() -> bool: return Logger.path.exists()
+
 
 
 class BuildDocError(BaseException):
