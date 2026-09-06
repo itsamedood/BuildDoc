@@ -1,4 +1,5 @@
 from interpreter.lexer import Lexer
+from out import BuildDocDebugMessage
 from pathlib import Path
 
 
@@ -14,7 +15,8 @@ class Interpreter:
       self.code = script.read()
 
     # Lexer!
-    self.lexer.tokenize(self.code)
+    tokens = self.lexer.tokenize(self.code)
+    BuildDocDebugMessage([f"{t.name}, {v}" for t,v in tokens])
 
     # Parser!
     ...

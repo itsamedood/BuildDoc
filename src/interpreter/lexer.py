@@ -7,14 +7,14 @@ class Lexer:
   Tokenizes the script into tokens for the parser. Ignores comments.
   """
 
-  tokens: list[tuple[Token, str]]
+  tokens: list[tuple[Token, str]] = []
   comment = False
 
   def __init__(self) -> None: ...
 
-  def tokenize(self, code: str) -> None: # Iterator[Token]:
+  def tokenize(self, code: str) -> list[tuple[Token, str]]: # Iterator[Token]:
     """
-    Tokenizes code into tokens (duh) for the parser.
+    Tokenizes code into tokens (duh) for the parser. Returns `self.tokens`.
 
     Ignores comments entirely.
     """
@@ -40,3 +40,5 @@ class Lexer:
       except ValueError:
         raise BuildDocError("Unknown character: '%s'." %char, 1)
         # self.tokens.append((Token.ANY, char))
+
+    return self.tokens

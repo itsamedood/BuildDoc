@@ -1,4 +1,5 @@
 from flags import Flags
+from interpreter.interpreter import Interpreter  # lol.
 from out import BuildDocError
 from pathlib import Path
 
@@ -10,6 +11,5 @@ if __name__ == "__main__":
   if not (bdpath:=((cwd:=Path().cwd())/"BuildDoc")).exists(): raise BuildDocError("No BuildDoc in `%s`." %cwd, 1)
   # if Flags.givens["verbose"]: ...
 
-  # Invoke the lexer and get the ball rolling!
-  with open(bdpath, "rb") as bdscript:
-    raw = bdscript.read()
+  # Invoke the interpreter and have it call the other parts (lexer & parser).
+  interpreter = Interpreter(bdpath)

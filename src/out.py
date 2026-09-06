@@ -23,13 +23,9 @@ class Logger:
   def check_for_log() -> bool: return Logger.path.exists()
 
   @staticmethod
-  def write_to_log() -> None:
+  def write_to_log(*content: str, sep='\n') -> None:
     Logger.create_log()
-
-
-  # @staticmethod
-  # def check_for_log() -> bool: return Logger.path.exists()
-
+    with open(Logger.path, 'a') as log: log.write(sep.join(content))
 
 
 class BuildDocError(BaseException):
