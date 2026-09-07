@@ -29,6 +29,7 @@ class Flags:
   task: str | None = ''  # Not really necessary but maybe you'll want the task given at runtime? Idk.
   givens: dict[str, bool] = {
     "verbose": False,
+    "log": False
     # ...
   }
 
@@ -36,10 +37,10 @@ class Flags:
   def init() -> None:
     """ Initializes the class itself, because it's static. """
 
-    Flags.task = last if (last:=argv[-1])[0] != '-' else None  # hehe pp operator.
+    Flags.task = last if (last:=argv[-1]+' ')[0] != '-' else None  # hehe pp operator.
 
     for oarg in argv:
-      if not oarg[0] == '-': continue
+      if len(oarg) > 1 and not oarg[0] == '-': continue
       arg = oarg[1:]
 
       if arg == 'help' or arg == 'h':

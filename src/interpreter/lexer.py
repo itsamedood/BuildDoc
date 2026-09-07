@@ -24,7 +24,7 @@ class Lexer:
         # Probably gonna be more important later on.
         if char == Token.NEWLINE.value:
           self.comment = False
-          ...  # 2 steps ahead?
+          # Maybe not 2 steps ahead after all.
 
         if char == Token.POUND.value:
           self.comment = True
@@ -38,7 +38,7 @@ class Lexer:
           (Token(char), char)
         )
       except ValueError:
-        raise BuildDocError("Unknown character: '%s'." %char, 1)
-        # self.tokens.append((Token.ANY, char))
+        self.tokens.append((Token.ANY, char))  # Handle later since `echo 👌` should work.
+        # raise BuildDocError("Unknown character: '%s'." %char, 1)
 
     return self.tokens
