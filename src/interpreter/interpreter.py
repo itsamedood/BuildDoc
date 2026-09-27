@@ -1,4 +1,5 @@
 from interpreter.lexer import Lexer
+from interpreter.parser import Parser
 from out import BuildDocDebugMessage
 from pathlib import Path
 
@@ -9,6 +10,7 @@ class Interpreter:
   """
 
   lexer = Lexer()
+  parser = Parser()
 
   def __init__(self, path: Path) -> None:
     with open(path, "r") as script:
@@ -19,4 +21,4 @@ class Interpreter:
     BuildDocDebugMessage([f"{t.name}, {v}" for t,v in tokens])
 
     # Parser!
-    ...
+    self.parser.parse_script(self.code)
