@@ -1,6 +1,6 @@
 # Created using `build -init`!
 
-MAIN="src/main.py"
+MAIN="src/main.py" # Would be cool if this worked right?
 PYFLAGS='-B'
 uno ="1"
 dos= '2'

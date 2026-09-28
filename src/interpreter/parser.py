@@ -20,15 +20,16 @@ class Parser:
   variables: list[tuple[str, Any]]
   reading = -1  # None of them just in case so we don't fuck up and parse something as a task command.
 
-  def __init__(self) -> None: ...
+  def __init__(self, tokens: list[list[tuple[Token, str]]]) -> None: ...
 
-  def parse_line(self, line: str) -> None:
-    ...  # Vars, tasks, commands. Simple right?
+  def parse_line(self, line: list[tuple[Token, str]]) -> None:
+    # print(line)
+
+    for c, (token, value) in enumerate(line):
+      ...  # Vars, tasks, commands. Simple right?
 
     self.line += 1  # Last!
 
-  def parse_script(self, code: str) -> None:
-    lines = code.split('\n')
-
-    for line in lines:
+  def parse_script(self, code: list[list[tuple[Token, str]]]) -> None:
+    for line in code:
       self.parse_line(line)

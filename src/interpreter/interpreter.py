@@ -9,16 +9,17 @@ class Interpreter:
   Handles invoking the lexer and parser.
   """
 
-  lexer = Lexer()
-  parser = Parser()
-
   def __init__(self, path: Path) -> None:
     with open(path, "r") as script:
-      self.code = script.read()
+      self.code = [line.strip() for line in script.readlines()]
 
     # Lexer!
-    tokens = self.lexer.tokenize(self.code)
-    BuildDocDebugMessage([f"{t.name}, {v}" for t,v in tokens])
+    # self.lexer = Lexer()
+    # self.parser = Parser((tokens:=self.lexer.tokenize(self.code)))
+    self.parser = Parser(tokens:=((lexer:=Lexer()).tokenize(self.code)))  # God I love walrus operator.
+    self.tokens, self.lexer = tokens, lexer
+
+    # BuildDocDebugMessage([[f"{t.name}, {v}" for t,v in lt] for lt in tokens])
 
     # Parser!
-    self.parser.parse_script(self.code)
+    self.parser.parse_script(tokens)
